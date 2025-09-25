@@ -1,0 +1,1 @@
+since im not leaking my database creds like uh u don't get .env
