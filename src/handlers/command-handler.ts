@@ -6,15 +6,18 @@ import 'dotenv/config';
 import { pathToFileURL } from 'url';
 
 export async function commandHandler(client: Client & { commands: Collection<string, any> }) {
+  // Reset commands cleanly each time
+  client.commands?.clear?.();
   client.commands = new Collection();
+
   const commandFiles = await glob(path.join(__dirname, '../commands/**/*.{ts,js}').replace(/\\/g, '/'));
-  const commands = [];
+  const commands: any[] = [];
 
   for (const file of commandFiles) {
     try {
       const fileUrl = pathToFileURL(file).href;
       const module = await import(fileUrl);
-      const command = module.default || module; // Handle both default and direct exports
+      const command = module.default || module;
 
       if ('data' in command && 'execute' in command) {
         client.commands.set(command.data.name, command);
