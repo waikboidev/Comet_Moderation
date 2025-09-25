@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const GuildConfig = require('../models/GuildConfig'); // adjust path as needed
+const GuildConfig = require('../schemas/GuildConfig'); // adjust path as needed
 
 // Helper to fetch logging channel ID from mongoose schema
 async function getRoleLogChannel(guildId) {
