@@ -16,10 +16,9 @@
     "tsx": "^4.20.5"
   },
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "start": "tsx src/index.ts",
-    "register": "tsx src/scripts/register-commands.ts",
-    "clear": "tsx src/scripts/clear-commands.ts"
+    "start": "node src/index.js",
+    "register": "node src/scripts/register-commands.ts",
+    "clear": "node src/scripts/clear-commands.ts"
   },
   "keywords": [],
   "author": "",
