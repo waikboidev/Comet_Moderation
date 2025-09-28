@@ -11,7 +11,7 @@ module.exports = {
     const websocketLatency = Math.max(0, Math.round(interaction.client.ws.ping));
     const roundtripLatency = Date.now() - sent.createdTimestamp;
 
-    await interaction.editReply(`<:info:1421637332427083910> It took \`${apiLatency} ms\` to reach Discord Servers, \`${websocketLatency} ms\` to reach websocket, and \`${roundtripLatency} ms\` for a roundtrip message.`);
+    await interaction.editReply(`It took \`${apiLatency} ms\` to reach Discord Servers, \`${websocketLatency} ms\` to reach websocket, and \`${roundtripLatency} ms\` for a roundtrip message.`);
   },
 
   // Prefix command handler
@@ -25,12 +25,12 @@ module.exports = {
 
     // Accept c-ping or <prefix>ping
     if (content === `${prefix}ping`) {
-      const sent = await message.reply('Pinging...');
+      const sent = await message.channel.send('Pinging...');
       const apiLatency = sent.createdTimestamp - message.createdTimestamp;
       const websocketLatency = Math.max(0, Math.round(message.client.ws.ping));
       const roundtripLatency = Date.now() - sent.createdTimestamp;
 
-      await sent.edit(`<:info:1421637332427083910> It took \`${apiLatency} ms\` to reach Discord Servers, \`${websocketLatency} ms\` to reach websocket, and \`${roundtripLatency} ms\` for a roundtrip message.`);
+      await sent.edit(`It took \`${apiLatency} ms\` to reach Discord Servers, \`${websocketLatency} ms\` to reach websocket, and \`${roundtripLatency} ms\` for a roundtrip message.`);
     }
   }
 };

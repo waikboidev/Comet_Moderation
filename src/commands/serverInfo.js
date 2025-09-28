@@ -168,7 +168,7 @@ module.exports = {
       const guild = message.guild;
       const fetchedGuild = await guild.fetch().catch(() => null);
       if (!fetchedGuild) {
-        await message.reply({ content: "<:fail:1420911452050686034> Could not fetch full server information. Please try again." });
+        await message.channel.send({ content: "<:fail:1420911452050686034> Could not fetch full server information. Please try again." });
         return;
       }
 
@@ -211,7 +211,6 @@ module.exports = {
       const embed = new EmbedBuilder()
         .setAuthor({ name: `${fetchedGuild.name}`, iconURL: fetchedGuild.iconURL({ dynamic: true }) })
         .setThumbnail(fetchedGuild.iconURL({ dynamic: true, size: 256 }));
-
       if (fetchedGuild.description) {
         embed.setDescription(fetchedGuild.description);
       }
@@ -295,7 +294,7 @@ module.exports = {
       .setFooter({ text: `Requested by ${message.author.tag}`, iconURL: message.author.displayAvatarURL() })
       .setTimestamp();
 
-      await message.reply({ embeds: [embed] });
+      await message.channel.send({ embeds: [embed] });
     }
   }
 };
