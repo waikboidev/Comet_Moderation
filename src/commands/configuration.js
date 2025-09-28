@@ -83,6 +83,7 @@ module.exports = {
       return;
     }
 
+    // Save to config
     if (!config.Permissions) config.Permissions = {};
     let target = config.Permissions;
     if (subcommand) {
@@ -94,8 +95,9 @@ module.exports = {
       target[command] = target[command] || {};
       target = target[command];
     }
-    if (roleIds.length) target.roles = roleIds;
-    if (permissions.length) target.permissions = permissions;
+    // Always save as arrays
+    target.roles = Array.isArray(roleIds) ? roleIds : [];
+    target.permissions = Array.isArray(permissions) ? permissions : [];
     await config.save();
 
     const embed = new EmbedBuilder()

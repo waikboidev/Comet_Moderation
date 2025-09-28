@@ -6,16 +6,36 @@ const embedColors = require('../../embedColors');
 async function hasPermission(interaction, command, subcommand) {
   const guildId = interaction.guild.id;
   const config = await GuildConfig.findOne({ guildId });
-  let allowedRoles = config?.Permissions?.[command]?.[subcommand] || config?.Permissions?.[command] || null;
-  if (!allowedRoles) {
+
+  // Get custom permissions config
+  let permConfig = config?.Permissions?.[command]?.[subcommand] || config?.Permissions?.[command] || {};
+  if (!permConfig || (Array.isArray(permConfig) && permConfig.length === 0)) {
     // Default to admin if not set
     return interaction.member.permissions.has(PermissionFlagsBits.Administrator);
   }
-  // Ensure allowedRoles is always an array
+
+  // If config is an array, treat as role IDs (legacy support)
+  let allowedRoles = Array.isArray(permConfig) ? permConfig : permConfig.roles || [];
   if (!Array.isArray(allowedRoles)) {
     allowedRoles = typeof allowedRoles === 'string' ? [allowedRoles] : [];
   }
-  return interaction.member.roles.cache.some(role => allowedRoles.includes(role.id));
+
+  // Check for role match
+  const hasRole = allowedRoles.length > 0
+    ? interaction.member.roles.cache.some(role => allowedRoles.includes(role.id))
+    : false;
+
+  // Check for Discord permissions
+  const allowedPerms = Array.isArray(permConfig.permissions) ? permConfig.permissions : [];
+  const hasPerm = allowedPerms.length > 0
+    ? allowedPerms.some(perm => interaction.member.permissions.has(PermissionFlagsBits[perm] || perm))
+    : false;
+
+  // Allow if either role or permission matches
+  if (hasRole || hasPerm) return true;
+
+  // If neither matches, fallback to admin
+  return interaction.member.permissions.has(PermissionFlagsBits.Administrator);
 }
 
 module.exports = {
