@@ -10,6 +10,6 @@ module.exports = {
     const websocketLatency = Math.max(0, Math.round(interaction.client.ws.ping));
     const roundtripLatency = Date.now() - sent.createdTimestamp;
 
-    await interaction.editReply(`It took \`${apiLatency} ms\` to reach Discord Servers and \`${websocketLatency} ms\` to reach websocket and \`${roundtripLatency} ms\` for a roundtrip message.`);
+    await interaction.editReply(`It took \`${apiLatency} ms\` to reach Discord Servers, \`${websocketLatency} ms\` to reach websocket, and \`${roundtripLatency} ms\` for a roundtrip message.`);
   },
 };
