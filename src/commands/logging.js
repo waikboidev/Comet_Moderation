@@ -140,7 +140,7 @@ module.exports = {
         .setTitle('Logging Settings')
         .setDescription(desc);
 
-      await interaction.reply({ embeds: [embed], ephemeral: true });
+      await interaction.reply({ embeds: [embed], ephemeral: false });
     }
   }
 };
