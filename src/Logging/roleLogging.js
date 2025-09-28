@@ -12,8 +12,18 @@ async function getRoleLogChannel(guildId) {
 async function sendRoleLog(guild, embed) {
     const channelId = await getRoleLogChannel(guild.id);
     if (!channelId) return;
-    const channel = guild.channels.cache.get(channelId);
-    if (channel) channel.send({ embeds: [embed] });
+    // Fetch channel from API if not in cache
+    let channel = guild.channels.cache.get(channelId);
+    if (!channel) {
+        try {
+            channel = await guild.channels.fetch(channelId);
+        } catch {
+            return;
+        }
+    }
+    if (channel && channel.isTextBased()) {
+        channel.send({ embeds: [embed] });
+    }
 }
 
 
