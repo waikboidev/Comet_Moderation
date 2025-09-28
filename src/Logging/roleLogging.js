@@ -1,18 +1,28 @@
 const { EmbedBuilder } = require('discord.js');
-const GuildConfig = require('../schemas/GuildConfig'); // adjust path as needed
+const GuildConfig = require('../schemas/GuildConfig');
 
 // Helper to fetch logging channel ID for "role" logging type from mongoose schema
 async function getRoleLogChannel(guildId) {
+    // Debug: show what guildId is being checked
+    console.log(`[RoleLogging] Fetching roleLogChannelId for guildId: ${guildId}`);
     const config = await GuildConfig.findOne({ guildId });
     if (!config) {
         console.log(`[RoleLogging] No GuildConfig found for guildId: ${guildId}`);
         return null;
     }
-    if (!config.roleLogChannelId || typeof config.roleLogChannelId !== 'string' || config.roleLogChannelId.trim() === '') {
-        console.log(`[RoleLogging] roleLogChannelId not set or invalid for guildId: ${guildId}`);
-        return null;
+    // Use masterLogChannelId if roleLogChannelId is not set
+    let channelId = config.roleLogChannelId;
+    if (!channelId || typeof channelId !== 'string' || channelId.trim() === '') {
+        channelId = config.masterLogChannelId;
+        if (!channelId || typeof channelId !== 'string' || channelId.trim() === '') {
+            console.log(`[RoleLogging] No valid roleLogChannelId or masterLogChannelId for guildId: ${guildId}`);
+            return null;
+        }
+        console.log(`[RoleLogging] Using masterLogChannelId: ${channelId} for guildId: ${guildId}`);
+        return channelId;
     }
-    return config.roleLogChannelId;
+    console.log(`[RoleLogging] Using roleLogChannelId: ${channelId} for guildId: ${guildId}`);
+    return channelId;
 }
 
 // Logging channel embed sender with debug logging
