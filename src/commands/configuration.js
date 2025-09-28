@@ -79,7 +79,7 @@ module.exports = {
         .setColor(embedColors.error)
         .setTitle('Invalid Role(s)')
         .setDescription(`<:settingsFail:1421677704008302734> No valid roles found: ${failedRoles.map(n => `\`${n}\``).join(', ')}.\nPlease mention or type exact role names.`);
-      await interaction.reply({ embeds: [embed], ephemeral: true });
+      await interaction.reply({ embeds: [embed], ephemeral: false });
       return;
     }
 
@@ -106,7 +106,7 @@ module.exports = {
         roleIds.length ? `**Roles:** ${roleIds.map(id => `<@&${id}>`).join(', ')}` : '',
         permissions.length ? `**Permissions:** ${permissions.map(p => `\`${p}\``).join(', ')}` : ''
       ].filter(Boolean).join('\n'));
-    await interaction.reply({ embeds: [embed], ephemeral: true });
+    await interaction.reply({ embeds: [embed], ephemeral: false });
   }
 };
 

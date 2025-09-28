@@ -11,7 +11,10 @@ async function hasPermission(interaction, command, subcommand) {
     // Default to admin if not set
     return interaction.member.permissions.has(PermissionFlagsBits.Administrator);
   }
-  // allowedRoles can be array of role IDs
+  // Ensure allowedRoles is always an array
+  if (!Array.isArray(allowedRoles)) {
+    allowedRoles = typeof allowedRoles === 'string' ? [allowedRoles] : [];
+  }
   return interaction.member.roles.cache.some(role => allowedRoles.includes(role.id));
 }
 
