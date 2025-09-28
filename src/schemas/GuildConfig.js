@@ -18,12 +18,14 @@ const GuildConfigSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     default: {},
   },
-  // Add other config fields as needed, e.g.:
-  roleLogChannelId: {
-    type: String,
-    default: null,
-  },
-  // ...more fields as needed
+  // Logging channels
+  roleLogChannelId: { type: String, default: null },
+  messageLogChannelId: { type: String, default: null },
+  moderationLogChannelId: { type: String, default: null },
+  memberLogChannelId: { type: String, default: null },
+  serverLogChannelId: { type: String, default: null },
+  masterLogChannelId: { type: String, default: null },
+  // Add other config fields as needed
 });
 
 module.exports = mongoose.model('GuildConfig', GuildConfigSchema);

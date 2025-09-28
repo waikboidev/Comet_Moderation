@@ -4,11 +4,12 @@ const GuildConfig = require('../schemas/GuildConfig'); // adjust path as needed
 // Helper to fetch logging channel ID for "role" logging type from mongoose schema
 async function getRoleLogChannel(guildId) {
     const config = await GuildConfig.findOne({ guildId });
-    // Use masterLogChannelId if set, else roleLogChannelId
-    return config?.masterLogChannelId || config?.roleLogChannelId || null;
+    // Only use roleLogChannelId for role logs, ignore master for this type
+    // If not set or explicitly disabled (null), return null
+    if (!config || !config.roleLogChannelId) return null;
+    return config.roleLogChannelId;
 }
 
-// Logging channel embed sender
 async function sendRoleLog(guild, embed) {
     const channelId = await getRoleLogChannel(guild.id);
     if (!channelId) return;
@@ -22,7 +23,7 @@ async function sendRoleLog(guild, embed) {
         }
     }
     // Check for permissions and type
-    if (channel && channel.isTextBased && channel.isTextBased()) {
+    if (channel && typeof channel.send === 'function') {
         try {
             await channel.send({ embeds: [embed] });
         } catch (err) {
