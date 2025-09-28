@@ -4,33 +4,46 @@ const GuildConfig = require('../schemas/GuildConfig'); // adjust path as needed
 // Helper to fetch logging channel ID for "role" logging type from mongoose schema
 async function getRoleLogChannel(guildId) {
     const config = await GuildConfig.findOne({ guildId });
-    // Only use roleLogChannelId for role logs, ignore master for this type
-    // If not set or explicitly disabled (null/empty string), return null
-    if (!config || !config.roleLogChannelId || typeof config.roleLogChannelId !== 'string' || config.roleLogChannelId.trim() === '') return null;
+    if (!config) {
+        console.log(`[RoleLogging] No GuildConfig found for guildId: ${guildId}`);
+        return null;
+    }
+    if (!config.roleLogChannelId || typeof config.roleLogChannelId !== 'string' || config.roleLogChannelId.trim() === '') {
+        console.log(`[RoleLogging] roleLogChannelId not set or invalid for guildId: ${guildId}`);
+        return null;
+    }
     return config.roleLogChannelId;
 }
 
-// Logging channel embed sender
+// Logging channel embed sender with debug logging
 async function sendRoleLog(guild, embed) {
     const channelId = await getRoleLogChannel(guild.id);
-    if (!channelId) return;
-    // Try fetching from cache, then from API
+    if (!channelId) {
+        console.log(`[RoleLogging] No channelId to send log for guildId: ${guild.id}`);
+        return;
+    }
     let channel = guild.channels.cache.get(channelId);
     if (!channel) {
         try {
             channel = await guild.client.channels.fetch(channelId);
+            if (!channel) {
+                console.log(`[RoleLogging] Channel fetch returned null for channelId: ${channelId}`);
+                return;
+            }
         } catch (err) {
-            // Optionally log error
+            console.log(`[RoleLogging] Error fetching channelId: ${channelId} - ${err}`);
             return;
         }
     }
-    // Check for permissions and type
     if (channel && typeof channel.send === 'function') {
         try {
             await channel.send({ embeds: [embed] });
+            console.log(`[RoleLogging] Sent embed to channelId: ${channelId} in guildId: ${guild.id}`);
         } catch (err) {
-            // Optionally log error
+            console.log(`[RoleLogging] Error sending embed to channelId: ${channelId} - ${err}`);
         }
+    } else {
+        console.log(`[RoleLogging] Channel is not text-based or cannot send for channelId: ${channelId}`);
     }
 }
 
