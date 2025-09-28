@@ -10,6 +10,10 @@ const GuildConfigSchema = new mongoose.Schema({
     type: String,
     default: 'c-',
   },
+  PrefixEnabled: {
+    type: Boolean,
+    default: true,
+  },
   Permissions: {
     type: mongoose.Schema.Types.Mixed,
     default: {},

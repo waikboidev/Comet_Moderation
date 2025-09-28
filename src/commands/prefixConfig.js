@@ -18,7 +18,7 @@ async function hasPermission(interaction, command, subcommand) {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('prefix')
-    .setDescription('View, set, or reset the server command prefix.')
+    .setDescription('View, set, reset, or configure prefix command usage.')
     .addSubcommand(sub =>
       sub.setName('view').setDescription('View the current prefix')
     )
@@ -33,6 +33,15 @@ module.exports = {
     )
     .addSubcommand(sub =>
       sub.setName('reset').setDescription('Reset the prefix to default')
+    )
+    .addSubcommand(sub =>
+      sub.setName('toggle')
+        .setDescription('Enable or disable prefix commands for this server.')
+        .addBooleanOption(opt =>
+          opt.setName('enabled')
+            .setDescription('Enable prefix commands?')
+            .setRequired(true)
+        )
     ),
 
   async execute(interaction) {
@@ -42,11 +51,11 @@ module.exports = {
     // Ensure guild config exists
     let config = await GuildConfig.findOne({ guildId });
     if (!config) {
-      config = await GuildConfig.create({ guildId, Prefix: 'c-' });
+      config = await GuildConfig.create({ guildId, Prefix: 'c-', PrefixEnabled: true });
     }
 
     // Permission check for set/reset
-    if (sub === 'set' || sub === 'reset') {
+    if (sub === 'set' || sub === 'reset' || sub === 'toggle') {
       const allowed = await hasPermission(interaction, 'prefix', sub);
       if (!allowed) {
         const embed = new EmbedBuilder()
@@ -60,8 +69,7 @@ module.exports = {
     if (sub === 'view') {
       const embed = new EmbedBuilder()
         .setColor(embedColors.info)
-        .setTitle('Current Prefix')
-        .setDescription(`\`${config.Prefix}\``);
+        .setDescription(`**Server Prefix:** \`${config.Prefix}\``);
       await interaction.reply({ embeds: [embed], ephemeral: true });
     } else if (sub === 'set') {
       const newPrefix = interaction.options.getString('prefix');
@@ -69,7 +77,6 @@ module.exports = {
       await config.save();
       const embed = new EmbedBuilder()
         .setColor(embedColors.success)
-        .setTitle('Prefix Updated')
         .setDescription('<:settingsSuccess:1421677722601787412> Prefix updated to: `' + newPrefix + '`');
       await interaction.reply({ embeds: [embed], ephemeral: false });
     } else if (sub === 'reset') {
@@ -77,8 +84,17 @@ module.exports = {
       await config.save();
       const embed = new EmbedBuilder()
         .setColor(embedColors.success)
-        .setTitle('Prefix Reset')
         .setDescription('<:settingsSuccess:1421677722601787412> Prefix reset to default: `c-`');
+      await interaction.reply({ embeds: [embed], ephemeral: false });
+    } else if (sub === 'toggle') {
+      const enabled = interaction.options.getBoolean('enabled');
+      config.PrefixEnabled = enabled;
+      await config.save();
+      const embed = new EmbedBuilder()
+        .setColor(enabled ? embedColors.success : embedColors.warning)
+        .setDescription(enabled
+          ? '<:settingsSuccess:1421677722601787412> Prefix commands are now **enabled** for this server.'
+          : '<:settingsSuccess:1421677722601787412> Prefix commands are now **disabled** for this server.');
       await interaction.reply({ embeds: [embed], ephemeral: false });
     }
   }
