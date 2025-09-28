@@ -108,7 +108,7 @@ module.exports = {
         const embed = new EmbedBuilder()
           .setColor(embedColors.warning)
           .setTitle('All Logging Disabled')
-          .setDescription(`<:settingsSuccess:1421677722601787412> All logging types have been disabled. Existing configuration is saved.`);
+          .setDescription(`<:settingsSuccess:1421677722601787412> All logging types have been disabled.`);
         await interaction.reply({ embeds: [embed], ephemeral: false });
       } else {
         // Disable specific logging type
@@ -117,7 +117,7 @@ module.exports = {
         const embed = new EmbedBuilder()
           .setColor(embedColors.warning)
           .setTitle('Logging Disabled')
-          .setDescription(`<:settingsSuccess:1421677722601787412> Logging for **${loggingType}** has been disabled. Existing configuration is saved.`);
+          .setDescription(`<:settingsSuccess:1421677722601787412> Logging for **${loggingType}** has been disabled.`);
         await interaction.reply({ embeds: [embed], ephemeral: false });
       }
     } else if (sub === 'settingsshow') {
