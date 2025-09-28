@@ -5,11 +5,12 @@ const GuildConfig = require('../schemas/GuildConfig'); // adjust path as needed
 async function getRoleLogChannel(guildId) {
     const config = await GuildConfig.findOne({ guildId });
     // Only use roleLogChannelId for role logs, ignore master for this type
-    // If not set or explicitly disabled (null), return null
-    if (!config || !config.roleLogChannelId) return null;
+    // If not set or explicitly disabled (null/empty string), return null
+    if (!config || !config.roleLogChannelId || typeof config.roleLogChannelId !== 'string' || config.roleLogChannelId.trim() === '') return null;
     return config.roleLogChannelId;
 }
 
+// Logging channel embed sender
 async function sendRoleLog(guild, embed) {
     const channelId = await getRoleLogChannel(guild.id);
     if (!channelId) return;
@@ -18,7 +19,8 @@ async function sendRoleLog(guild, embed) {
     if (!channel) {
         try {
             channel = await guild.client.channels.fetch(channelId);
-        } catch {
+        } catch (err) {
+            // Optionally log error
             return;
         }
     }
