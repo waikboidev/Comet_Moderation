@@ -50,6 +50,15 @@ module.exports = {
             .setDescription('Discord permissions (comma separated, e.g. ManageChannels, ManageMessages)')
             .setRequired(false)
         )
+    )
+    .addSubcommand(sub =>
+      sub.setName('locks')
+        .setDescription('Configure which roles are affected by lock/unlock commands.')
+        .addStringOption(opt =>
+          opt.setName('roles')
+            .setDescription('Mention roles or type role names (comma separated)')
+            .setRequired(true)
+        )
     ),
 
   async execute(interaction) {
@@ -71,6 +80,42 @@ module.exports = {
 
     const command = interaction.options.getString('command');
     const subcommand = interaction.options.getString('subcommand');
+    const sub = interaction.options.getSubcommand();
+
+    if (sub === 'locks') {
+      const rolesInput = interaction.options.getString('roles');
+      const roleIds = [];
+      const failedRoles = [];
+      const roleNames = rolesInput.split(',').map(r => r.trim());
+      for (const r of roleNames) {
+        const match = r.match(/^<@&(\d+)>$/);
+        if (match) {
+          roleIds.push(match[1]);
+        } else {
+          const found = interaction.guild.roles.cache.find(role => role.name === r);
+          if (found) roleIds.push(found.id);
+          else failedRoles.push(r);
+        }
+      }
+      if (!roleIds.length) {
+        const embed = new EmbedBuilder()
+          .setColor(embedColors.error)
+          .setTitle('Invalid Role(s)')
+          .setDescription(`No valid roles found: ${failedRoles.map(n => `\`${n}\``).join(', ')}.\nPlease mention or type exact role names.`);
+        await interaction.reply({ embeds: [embed], ephemeral: true });
+        return;
+      }
+      if (!config.Locks) config.Locks = {};
+      config.Locks.roles = roleIds;
+      await config.save();
+      const embed = new EmbedBuilder()
+        .setColor(embedColors.success)
+        .setTitle('Lock Roles Updated')
+        .setDescription(`Lock/unlock commands will now affect: ${roleIds.map(id => `<@&${id}>`).join(', ')}`);
+      await interaction.reply({ embeds: [embed], ephemeral: false });
+      return;
+    }
+
     const rolesInput = interaction.options.getString('roles');
     const permsInput = interaction.options.getString('permissions');
 
