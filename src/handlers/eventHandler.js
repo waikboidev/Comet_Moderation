@@ -27,9 +27,11 @@ async function eventHandler(client) {
   // Add prefix command support for messageCreate
   const ping = require('../commands/ping');
   const serverInfo = require('../commands/serverInfo');
+  const userInfo = require('../commands/userInfo');
   client.on('messageCreate', async (message) => {
     await ping.prefixHandler?.(message);
     await serverInfo.prefixHandler?.(message);
+    await userInfo.prefixHandler?.(message);
     // Add more prefixHandler calls for other commands as needed
   });
 }

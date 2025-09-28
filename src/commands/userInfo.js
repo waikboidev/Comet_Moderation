@@ -213,10 +213,25 @@ module.exports = {
         if (content === `${prefix}whois` || content === `${prefix}userinfo`) {
             // Get user from mention or fallback to author
             let userId = message.mentions.users.first()?.id || message.author.id;
-            const fullUser = await message.client.users.fetch(userId, { force: true }).catch(() => message.author);
-            const targetMember = await message.guild.members.fetch(userId).catch(() => null);
+            let fullUser, targetMember;
+            try {
+                fullUser = await message.client.users.fetch(userId, { force: true });
+            } catch {
+                const errorEmbed = new EmbedBuilder()
+                    .setColor(embedColors.error)
+                    .setTitle('User Not Found')
+                    .setDescription(`<:fail:1420911452050686034> Could not fetch user information. Please mention a valid user or try again.`);
+                await message.channel.send({ embeds: [errorEmbed] });
+                return;
+            }
+            try {
+                targetMember = await message.guild.members.fetch(userId);
+            } catch {
+                targetMember = null;
+            }
 
             // --- General User Information ---
+            const userIdStr = fullUser.id;
             const userTag = fullUser.tag;
             const userMention = fullUser.toString();
             const createdAt = `<t:${Math.floor(fullUser.createdTimestamp / 1000)}:f> (<t:${Math.floor(fullUser.createdTimestamp / 1000)}:R>)`;
@@ -230,7 +245,7 @@ module.exports = {
                 }
             }
             if (fullUser.premiumType > 0) {
-                userBadgesArray.push('<:nitrodiamond:1389935204889526393>');
+                userBadgesArray.push('<:nitrodiamond:1421720341994143856>');
             }
             const displayBadges = userBadgesArray.length > 0 ? userBadgesArray.join(' ') : 'None';
 
@@ -244,13 +259,13 @@ module.exports = {
             }
             let embedColor = fullUser.hexAccentColor || embedColors.info;
 
-            let generalInfo = `> <:oasis_user:1388375408084254911> **User:** ${userTag}\n`;
+            let generalInfo = `> <:member:1421719521957380148> **User:** ${userTag}\n`;
             generalInfo += `> <:mention:1421718140395454575> **Mention:** ${userMention}\n`;
             if (targetMember?.nickname) {
                 generalInfo += `> <:nickname:1421718131545608302> **Nickname:** ${targetMember.nickname}\n`;
             }
+            generalInfo += `> <:id:1421718731800838207> **ID:** \`${userIdStr}\`\n`;
             generalInfo += `> <:servermembernew:1421717673024426054> **Badges:** ${displayBadges}\n`;
-            generalInfo += `> <:id:1421718731800838207> **ID:** \`${fullUser.id}\`\n`;
             generalInfo += `> <:discordicon:1421718163141431336> **Created:** ${createdAt}\n`;
             generalInfo += `> <:edit:1421718153460711444> **Banner Color:** ${bannerColorDisplay}\n`;
             generalInfo += `> [**Avatar URL**](${avatarURL})\n`;
@@ -264,8 +279,8 @@ module.exports = {
                 const joinedAt = `<t:${Math.floor(targetMember.joinedTimestamp / 1000)}:f> (<t:${Math.floor(targetMember.joinedTimestamp / 1000)}:R>)`;
                 const topRole = targetMember.roles.highest.name === '@everyone' ? 'None' : targetMember.roles.highest.toString();
 
-                serverInfo += `> <:oasis_discord:1388371504898773052> **Joined:** ${joinedAt}\n`;
-                serverInfo += `> <:oasis_lightning:1388375932758130788> **Main Role:** ${topRole}\n`;
+                serverInfo += `> <:discordicon:1421718163141431336> **Joined:** ${joinedAt}\n`;
+                serverInfo += `> <:role:1421718177863176202> **Main Role:** ${topRole}\n`;
 
                 const allMemberRoles = [...targetMember.roles.cache.values()]
                     .filter(r => r && typeof r === 'object' && r.id && typeof r.id === 'string' && r.name && typeof r.name === 'string' && r.id !== message.guild.id && typeof r.position === 'number')
