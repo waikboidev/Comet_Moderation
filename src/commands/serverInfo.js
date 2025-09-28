@@ -1,6 +1,6 @@
 // prefix support & prefix command required, awaiting mongoose integration to go through with process
 
-const { SlashCommandBuilder, EmbedBuilder, GuildVerificationLevel, GuildExplicitContentFilter, ChannelType, GuildMFALevel } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, GuildVerificationLevel, GuildExplicitContentFilter, ChannelType, GuildMFALevel, PermissionFlagsBits } = require("discord.js");
 const GuildConfig = require('../schemas/GuildConfig');
 const embedColors = require('../../embedColors');
 require("dotenv").config();
@@ -309,5 +309,26 @@ module.exports = {
 
       await message.channel.send({ embeds: [embed] });
     }
+  },
+
+  // Helper to check if user has permission for a command/subcommand
+  async hasPermission(interaction, command, subcommand) {
+    const guildId = interaction.guild.id;
+    const config = await GuildConfig.findOne({ guildId });
+
+    let permConfig = config?.Permissions?.[command]?.[subcommand] || config?.Permissions?.[command] || {};
+    let allowedRoles = Array.isArray(permConfig) ? permConfig : permConfig.roles || [];
+    if (!Array.isArray(allowedRoles)) {
+      allowedRoles = typeof allowedRoles === 'string' ? [allowedRoles] : [];
+    }
+    const allowedPerms = Array.isArray(permConfig.permissions) ? permConfig.permissions : [];
+
+    if (allowedRoles.length > 0 || allowedPerms.length > 0) {
+      const hasRole = interaction.member.roles.cache.some(role => allowedRoles.includes(role.id));
+      const hasPerm = allowedPerms.some(perm => interaction.member.permissions.has(PermissionFlagsBits[perm] || perm));
+      return hasRole || hasPerm;
+    }
+
+    return interaction.member.permissions.has(PermissionFlagsBits.Administrator);
   }
 };

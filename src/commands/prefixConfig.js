@@ -9,32 +9,23 @@ async function hasPermission(interaction, command, subcommand) {
 
   // Get custom permissions config
   let permConfig = config?.Permissions?.[command]?.[subcommand] || config?.Permissions?.[command] || {};
-  if (!permConfig || (Array.isArray(permConfig) && permConfig.length === 0)) {
-    // Default to admin if not set
-    return interaction.member.permissions.has(PermissionFlagsBits.Administrator);
-  }
-
   // If config is an array, treat as role IDs (legacy support)
   let allowedRoles = Array.isArray(permConfig) ? permConfig : permConfig.roles || [];
   if (!Array.isArray(allowedRoles)) {
     allowedRoles = typeof allowedRoles === 'string' ? [allowedRoles] : [];
   }
-
-  // Check for role match
-  const hasRole = allowedRoles.length > 0
-    ? interaction.member.roles.cache.some(role => allowedRoles.includes(role.id))
-    : false;
-
-  // Check for Discord permissions
   const allowedPerms = Array.isArray(permConfig.permissions) ? permConfig.permissions : [];
-  const hasPerm = allowedPerms.length > 0
-    ? allowedPerms.some(perm => interaction.member.permissions.has(PermissionFlagsBits[perm] || perm))
-    : false;
 
-  // Allow if either role or permission matches
-  if (hasRole || hasPerm) return true;
+  // If any custom permissions (roles or perms) are set, ONLY use those (do not fallback to admin)
+  if (allowedRoles.length > 0 || allowedPerms.length > 0) {
+    // Check for role match
+    const hasRole = interaction.member.roles.cache.some(role => allowedRoles.includes(role.id));
+    // Check for Discord permissions
+    const hasPerm = allowedPerms.some(perm => interaction.member.permissions.has(PermissionFlagsBits[perm] || perm));
+    return hasRole || hasPerm;
+  }
 
-  // If neither matches, fallback to admin
+  // If no custom permissions, fallback to admin
   return interaction.member.permissions.has(PermissionFlagsBits.Administrator);
 }
 
@@ -96,6 +87,13 @@ module.exports = {
       await interaction.reply({ embeds: [embed], ephemeral: true });
     } else if (sub === 'set') {
       const newPrefix = interaction.options.getString('prefix');
+      if (config.Prefix === newPrefix) {
+        const embed = new EmbedBuilder()
+          .setColor(embedColors.warning)
+          .setDescription(`<:settingsAlert:1421727400122912859> The prefix \`${newPrefix}\` is already set as the active prefix.`);
+        await interaction.reply({ embeds: [embed], ephemeral: true });
+        return;
+      }
       config.Prefix = newPrefix;
       await config.save();
       const embed = new EmbedBuilder()

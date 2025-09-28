@@ -2,6 +2,27 @@ const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('disc
 const GuildConfig = require('../schemas/GuildConfig');
 const embedColors = require('../../embedColors');
 
+// Helper to check if user has permission for a command/subcommand
+async function hasPermission(interaction, command, subcommand) {
+  const guildId = interaction.guild.id;
+  const config = await GuildConfig.findOne({ guildId });
+
+  let permConfig = config?.Permissions?.[command]?.[subcommand] || config?.Permissions?.[command] || {};
+  let allowedRoles = Array.isArray(permConfig) ? permConfig : permConfig.roles || [];
+  if (!Array.isArray(allowedRoles)) {
+    allowedRoles = typeof allowedRoles === 'string' ? [allowedRoles] : [];
+  }
+  const allowedPerms = Array.isArray(permConfig.permissions) ? permConfig.permissions : [];
+
+  if (allowedRoles.length > 0 || allowedPerms.length > 0) {
+    const hasRole = interaction.member.roles.cache.some(role => allowedRoles.includes(role.id));
+    const hasPerm = allowedPerms.some(perm => interaction.member.permissions.has(PermissionFlagsBits[perm] || perm));
+    return hasRole || hasPerm;
+  }
+
+  return interaction.member.permissions.has(PermissionFlagsBits.Administrator);
+}
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('configuration')
@@ -32,7 +53,9 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
+    // Permission check for configuration command
+    const allowed = await hasPermission(interaction, 'configuration', 'commandpermissions');
+    if (!allowed) {
       const embed = new EmbedBuilder()
         .setColor(embedColors.error)
         .setDescription('<:fail:1420911452050686034> You do not have permission to use this command.');
