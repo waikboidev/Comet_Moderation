@@ -207,13 +207,45 @@ module.exports = {
         if (!config?.PrefixEnabled) return;
 
         const prefix = config?.Prefix || 'c-';
-        const content = message.content.trim().toLowerCase();
+        const content = message.content.trim();
 
         // Accept {prefix}whois or {prefix}userinfo
-        if (content === `${prefix}whois` || content === `${prefix}userinfo`) {
-            // Get user from mention or fallback to author
-            let userId = message.mentions.users.first()?.id || message.author.id;
-            let fullUser, targetMember;
+        if (content.toLowerCase().startsWith(`${prefix}whois`) || content.toLowerCase().startsWith(`${prefix}userinfo`)) {
+            // Extract argument (user identifier)
+            const args = content.split(' ').slice(1);
+            let userId = null;
+            let fullUser = null;
+            let targetMember = null;
+
+            // Try mention
+            if (message.mentions.users.size > 0) {
+                userId = message.mentions.users.first().id;
+            }
+            // Try ID
+            else if (args[0] && /^\d{17,}$/.test(args[0])) {
+                userId = args[0];
+            }
+            // Try username/nickname (close match)
+            else if (args.length > 0 && args[0]) {
+                const search = args.join(' ').toLowerCase();
+                // Try username
+                let member = message.guild.members.cache.find(m => m.user.username.toLowerCase() === search);
+                // Try nickname
+                if (!member) {
+                    member = message.guild.members.cache.find(m => m.nickname && m.nickname.toLowerCase() === search);
+                }
+                // Try close match username/nickname
+                if (!member) {
+                    member = message.guild.members.cache.find(m =>
+                        m.user.username.toLowerCase().includes(search) ||
+                        (m.nickname && m.nickname.toLowerCase().includes(search))
+                    );
+                }
+                if (member) userId = member.id;
+            }
+            // Default to author
+            if (!userId) userId = message.author.id;
+
             try {
                 fullUser = await message.client.users.fetch(userId, { force: true });
             } catch {
