@@ -1,10 +1,11 @@
 const { EmbedBuilder } = require('discord.js');
 const GuildConfig = require('../schemas/GuildConfig'); // adjust path as needed
 
-// Helper to fetch logging channel ID from mongoose schema
+// Helper to fetch logging channel ID for "role" logging type from mongoose schema
 async function getRoleLogChannel(guildId) {
     const config = await GuildConfig.findOne({ guildId });
-    return config?.roleLogChannelId || null;
+    // Use masterLogChannelId if set, else roleLogChannelId
+    return config?.masterLogChannelId || config?.roleLogChannelId || null;
 }
 
 // Logging channel embed sender
