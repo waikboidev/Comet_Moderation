@@ -71,7 +71,6 @@ module.exports = {
             `**Server ID:** ${fetchedGuild.id}`,
             `**Owner:** <@${fetchedGuild.ownerId}>`,
             `**Members:** ${fetchedGuild.memberCount}`,
-            `**Online Members:** ${onlineMembers}`,
             `**Created On:** <t:${Math.floor(fetchedGuild.createdTimestamp / 1000)}:F>`,
             `**Notifications:** ${fetchedGuild.defaultMessageNotifications === 0 ? "All Messages" : "Only @Mentions"}`,
             `**Server Boosts:** ${fetchedGuild.premiumSubscriptionCount || 0} (Level ${fetchedGuild.premiumTier})`
@@ -87,14 +86,14 @@ module.exports = {
 
         // Configuration
         { name: "Configuration", value: [
-            `**Public Updates Channel:** ${fetchedGuild.publicUpdatesChannel ? `<#${fetchedGuild.publicUpdatesChannel.id}>` : "Not Configured"}`,
+            `**Public Updates Channel:** ${fetchedGuild.publicUpdatesChannel ? `<#${fetchedGuild.publicUpdatesChannel.id}>` : "Not Setup"}`,
             `**System Messages Channel:** ${fetchedGuild.systemChannel ? `<#${fetchedGuild.systemChannel.id}>` : "Not Setup"}`,
             `**Rules Channel:** ${fetchedGuild.rulesChannel ? `<#${fetchedGuild.rulesChannel.id}>` : "Not Setup"}`
         ].join('\n'), inline: false },
 
         // Channels
         {
-            name: `Channels [${channels.size}]`,
+            name: `Channels (${channels.size})`,
             value: [
                 `**Categories:** ${categoryCount}`,
                 `**Text:** ${textCount}`,
@@ -102,22 +101,21 @@ module.exports = {
                 `**Threads:** ${threadCount}`,
                 `**Voice:** ${voiceCount}`,
                 `**Announcement:** ${announcementCount}`,
-                `**Total:** ${channels.size}`
             ].join('\n'),
             inline: false
         },
 
         // Roles
         {
-            name: `Roles [${roles.size}]`,
-            value: `${displayedRoles}${remainingRolesCount || ''}\n**Total:** ${roles.size}`,
+            name: `Roles (${roles.size})`,
+            value: `${displayedRoles}${remainingRolesCount || ''}`,
             inline: false
         },
 
         // Emojis
         {
-            name: `Emojis [${Math.min(emojis.size, 15)}/${emojis.size}]`,
-            value: `${displayedEmojis}${remainingEmojisCount || ''}\n**Total:** ${emojis.size}`,
+            name: `Emojis (${Math.min(emojis.size, 15)}/${emojis.size})`,
+            value: `${displayedEmojis}${remainingEmojisCount || ''}`,
             inline: false
         },
 
@@ -136,8 +134,6 @@ module.exports = {
             value: [
                 `**Banner:** ${fetchedGuild.banner ? `[Banner Image](${fetchedGuild.bannerURL({ size: 1024 })})` : "None"}`,
                 `**Vanity URL:** ${fetchedGuild.vanityURLCode ? `discord.gg/${fetchedGuild.vanityURLCode}` : "None"}`,
-                `**Max Members:** ${fetchedGuild.maximumMembers || "Unknown"}`,
-                `**Max Presences:** ${fetchedGuild.maximumPresences || "Unknown"}`,
                 `**AFK Channel:** ${fetchedGuild.afkChannel ? `<#${fetchedGuild.afkChannel.id}>` : "None"}`,
                 `**AFK Timeout:** ${fetchedGuild.afkTimeout ? `${fetchedGuild.afkTimeout / 60} min` : "None"}`
             ].join('\n'),
