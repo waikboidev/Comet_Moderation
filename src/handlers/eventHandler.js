@@ -24,16 +24,25 @@ async function eventHandler(client) {
     logger.info(`Loaded event: ${eventName}`);
   }
 
-  // Add prefix command support for messageCreate
-  const ping = require('../commands/ping');
-  const serverInfo = require('../commands/serverInfo');
-  const userInfo = require('../commands/userInfo');
-  client.on('messageCreate', async (message) => {
-    await ping.prefixHandler?.(message);
-    await serverInfo.prefixHandler?.(message);
-    await userInfo.prefixHandler?.(message);
-    // Add more prefixHandler calls for other commands as needed
-  });
+  // Register messageCreate only once
+  if (!client._prefixHandlerRegistered) {
+    const ping = require('../commands/ping');
+    const serverInfo = require('../commands/serverInfo');
+    const userInfo = require('../commands/userInfo');
+    const purge = require('../commands/purge');
+    const lock = require('../commands/lock');
+    const unlock = require('../commands/unlock');
+    client.on('messageCreate', async (message) => {
+      await ping.prefixHandler?.(message);
+      await serverInfo.prefixHandler?.(message);
+      await userInfo.prefixHandler?.(message);
+      await purge.prefixHandler?.(message);
+      await lock.prefixHandler?.(message);
+      await unlock.prefixHandler?.(message);
+      // Add more prefixHandler calls for other commands as needed
+    });
+    client._prefixHandlerRegistered = true;
+  }
 }
 
 module.exports = { eventHandler };

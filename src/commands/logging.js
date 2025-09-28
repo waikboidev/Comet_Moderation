@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ChannelType } = require('discord.js');
 const GuildConfig = require('../schemas/GuildConfig');
 const embedColors = require('../../embedColors');
+const emojis = require('../../emojis');
 
 // Predefined logging types
 const LOGGING_TYPES = [
@@ -83,7 +84,7 @@ module.exports = {
         const embed = new EmbedBuilder()
           .setColor(embedColors.success)
           .setTitle('Master Logging Channel Set')
-          .setDescription(`<:settingsSuccess:1421677722601787412> All logging types will now use <#${channel.id}>.`);
+          .setDescription(`${emojis.settingsSuccess} All logging types will now use <#${channel.id}>.`);
         await interaction.reply({ embeds: [embed], ephemeral: false });
       } else {
         // Set channel for specific logging type
@@ -106,7 +107,7 @@ module.exports = {
         config.masterLogChannelId = null;
         await config.save();
         const embed = new EmbedBuilder()
-          .setColor(embedColors.warning)
+          .setColor(embedColors.success)
           .setTitle('All Logging Disabled')
           .setDescription(`<:settingsSuccess:1421677722601787412> All logging types have been disabled.`);
         await interaction.reply({ embeds: [embed], ephemeral: false });
@@ -115,7 +116,7 @@ module.exports = {
         config[`${loggingType}LogChannelId`] = null;
         await config.save();
         const embed = new EmbedBuilder()
-          .setColor(embedColors.warning)
+          .setColor(embedColors.success)
           .setTitle('Logging Disabled')
           .setDescription(`<:settingsSuccess:1421677722601787412> Logging for **${loggingType}** has been disabled.`);
         await interaction.reply({ embeds: [embed], ephemeral: false });
