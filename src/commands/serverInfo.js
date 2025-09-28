@@ -51,12 +51,18 @@ module.exports = {
     const voiceCount = channels.filter(c => c.type === ChannelType.GuildVoice).size;
     const announcementCount = channels.filter(c => c.type === ChannelType.GuildAnnouncement).size;
 
+    // Roles
     const roles = guild.roles.cache.sort((a, b) => b.position - a.position).filter(role => role.id !== guild.id); 
-    const displayedRoles = roles.map(role => `<@&${role.id}>`).slice(0, 15).join(', ');
+    const displayedRoles = roles.size
+      ? roles.map(role => `<@&${role.id}>`).slice(0, 15).join(', ')
+      : "None";
     const remainingRolesCount = roles.size > 15 ? ` and ${roles.size - 15} more...` : '';
 
+    // Emojis
     const emojis = guild.emojis.cache;
-    const displayedEmojis = emojis.map(e => `<:${e.name}:${e.id}>`).slice(0, 15).join(' ');
+    const displayedEmojis = emojis.size
+      ? emojis.map(e => `<:${e.name}:${e.id}>`).slice(0, 15).join(' ')
+      : "None";
     const remainingEmojisCount = emojis.size > 15 ? ` and ${emojis.size - 15} more...` : '';
 
     const embed = new EmbedBuilder()
@@ -201,11 +207,18 @@ module.exports = {
       const voiceCount = channels.filter(c => c.type === ChannelType.GuildVoice).size;
       const announcementCount = channels.filter(c => c.type === ChannelType.GuildAnnouncement).size;
 
+      // Roles
       const roles = guild.roles.cache.sort((a, b) => b.position - a.position).filter(role => role.id !== guild.id);
-      const displayedRoles = roles.map(role => `<@&${role.id}>`).slice(0, 15).join(', ');
+      const displayedRoles = roles.size
+        ? roles.map(role => `<@&${role.id}>`).slice(0, 15).join(', ')
+        : "None";
       const remainingRolesCount = roles.size > 15 ? ` and ${roles.size - 15} more...` : '';
+
+      // Emojis
       const emojis = guild.emojis.cache;
-      const displayedEmojis = emojis.map(e => `<:${e.name}:${e.id}>`).slice(0, 15).join(' ');
+      const displayedEmojis = emojis.size
+        ? emojis.map(e => `<:${e.name}:${e.id}>`).slice(0, 15).join(' ')
+        : "None";
       const remainingEmojisCount = emojis.size > 15 ? ` and ${emojis.size - 15} more...` : '';
 
       const embed = new EmbedBuilder()
