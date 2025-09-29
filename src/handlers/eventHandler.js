@@ -32,6 +32,10 @@ async function eventHandler(client) {
     const purge = require('../commands/purge');
     const lock = require('../commands/lock');
     const unlock = require('../commands/unlock');
+    const channelInfo = require('../commands/channelInfo');
+    const uptime = require('../commands/uptime');
+    const help = require('../commands/help');
+    const timezone = require('../commands/timezone');
     client.on('messageCreate', async (message) => {
       await ping.prefixHandler?.(message);
       await serverInfo.prefixHandler?.(message);
@@ -39,6 +43,10 @@ async function eventHandler(client) {
       await purge.prefixHandler?.(message);
       await lock.prefixHandler?.(message);
       await unlock.prefixHandler?.(message);
+      await channelInfo.prefixHandler?.(message);
+      await uptime.prefixHandler?.(message);
+      await help.prefixHandler?.(message);
+      await timezone.prefixHandler?.(message);
       // Add more prefixHandler calls for other commands as needed
     });
     client._prefixHandlerRegistered = true;

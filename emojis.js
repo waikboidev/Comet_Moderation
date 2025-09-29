@@ -12,5 +12,12 @@ module.exports = {
   terminal: '<:terminal:1421638749225222277>',
   cooldown: '<:cooldown:1421637356036948121>',
   medals: '<:medals:1421637320481701919>',
+  timezoneLocation: '<:timezoneLocation:1422083194051887196>',
+  timezone12: '<:timezone12:1422083213391560766>',
+  timezone24: '<:timezone24:1422083226255491202>',
+  timezoneFail: '<:timezoneFail:1422083251660656811>',
+  timezoneSuccess: '<:timezoneSuccess:1422083238209261578>',
+  timezoneAlert: '<:timezoneAlert:1422086591618351124>',
+  clock: '<:clock:1422087080380596244>',
   // Add more as needed
 };

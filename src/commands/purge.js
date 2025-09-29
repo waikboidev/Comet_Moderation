@@ -1,5 +1,6 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const GuildConfig = require('../schemas/GuildConfig');
+const { hasPermission } = require('../utils/permissions');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -12,7 +13,7 @@ module.exports = {
     ),
   async execute(interaction) {
     const amount = interaction.options.getInteger('amount');
-    if (!interaction.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
+    if (!await hasPermission(interaction, 'purge')) {
       await interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
       return;
     }
@@ -33,7 +34,7 @@ module.exports = {
     const prefix = config?.Prefix || 'c-';
     const args = message.content.trim().split(/\s+/);
     if (args[0].toLowerCase() === `${prefix}purge` && args[1]) {
-      if (!message.member.permissions.has(PermissionFlagsBits.ManageMessages)) return;
+      if (!await hasPermission(message, 'purge')) return;
       const amount = parseInt(args[1]);
       if (isNaN(amount) || amount < 1 || amount > 100) return;
       await message.delete();

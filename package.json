@@ -5,6 +5,7 @@
     "discord.js": "^14.22.1",
     "dotenv": "^17.2.2",
     "glob": "^11.0.3",
+    "moment-timezone": "^0.6.0",
     "mongoose": "^8.18.1"
   },
   "name": "cometmod",

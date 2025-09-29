@@ -1,5 +1,6 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const GuildConfig = require('../schemas/GuildConfig');
+const { hasPermission } = require('../utils/permissions');
 
 async function getLockRoles(guild) {
   const config = await GuildConfig.findOne({ guildId: guild.id });
@@ -21,7 +22,7 @@ module.exports = {
         .setRequired(false)
     ),
   async execute(interaction) {
-    if (!interaction.member.permissions.has(PermissionFlagsBits.ManageChannels)) {
+    if (!await hasPermission(interaction, 'lock')) {
       await interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
       return;
     }
@@ -41,7 +42,7 @@ module.exports = {
     const prefix = config?.Prefix || 'c-';
     const args = message.content.trim().split(/\s+/);
     if (args[0].toLowerCase() === `${prefix}lock`) {
-      if (!message.member.permissions.has(PermissionFlagsBits.ManageChannels)) return;
+      if (!await hasPermission(message, 'lock')) return;
       const channel = message.mentions.channels.first() || message.channel;
       const roles = await getLockRoles(message.guild);
       for (const roleId of roles) {

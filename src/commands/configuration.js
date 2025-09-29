@@ -1,27 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const GuildConfig = require('../schemas/GuildConfig');
 const embedColors = require('../../embedColors');
-
-// Helper to check if user has permission for a command/subcommand
-async function hasPermission(interaction, command, subcommand) {
-  const guildId = interaction.guild.id;
-  const config = await GuildConfig.findOne({ guildId });
-
-  let permConfig = config?.Permissions?.[command]?.[subcommand] || config?.Permissions?.[command] || {};
-  let allowedRoles = Array.isArray(permConfig) ? permConfig : permConfig.roles || [];
-  if (!Array.isArray(allowedRoles)) {
-    allowedRoles = typeof allowedRoles === 'string' ? [allowedRoles] : [];
-  }
-  const allowedPerms = Array.isArray(permConfig.permissions) ? permConfig.permissions : [];
-
-  if (allowedRoles.length > 0 || allowedPerms.length > 0) {
-    const hasRole = interaction.member.roles.cache.some(role => allowedRoles.includes(role.id));
-    const hasPerm = allowedPerms.some(perm => interaction.member.permissions.has(PermissionFlagsBits[perm] || perm));
-    return hasRole || hasPerm;
-  }
-
-  return interaction.member.permissions.has(PermissionFlagsBits.Administrator);
-}
+const { hasPermission } = require('../utils/permissions');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -50,20 +30,11 @@ module.exports = {
             .setDescription('Discord permissions (comma separated, e.g. ManageChannels, ManageMessages)')
             .setRequired(false)
         )
-    )
-    .addSubcommand(sub =>
-      sub.setName('locks')
-        .setDescription('Configure which roles are affected by lock/unlock commands.')
-        .addStringOption(opt =>
-          opt.setName('roles')
-            .setDescription('Mention roles or type role names (comma separated)')
-            .setRequired(true)
-        )
     ),
 
   async execute(interaction) {
-    // Permission check for configuration command
-    const allowed = await hasPermission(interaction, 'configuration', 'commandpermissions');
+    const sub = interaction.options.getSubcommand();
+    const allowed = await hasPermission(interaction, 'configuration', sub);
     if (!allowed) {
       const embed = new EmbedBuilder()
         .setColor(embedColors.error)
@@ -80,42 +51,6 @@ module.exports = {
 
     const command = interaction.options.getString('command');
     const subcommand = interaction.options.getString('subcommand');
-    const sub = interaction.options.getSubcommand();
-
-    if (sub === 'locks') {
-      const rolesInput = interaction.options.getString('roles');
-      const roleIds = [];
-      const failedRoles = [];
-      const roleNames = rolesInput.split(',').map(r => r.trim());
-      for (const r of roleNames) {
-        const match = r.match(/^<@&(\d+)>$/);
-        if (match) {
-          roleIds.push(match[1]);
-        } else {
-          const found = interaction.guild.roles.cache.find(role => role.name === r);
-          if (found) roleIds.push(found.id);
-          else failedRoles.push(r);
-        }
-      }
-      if (!roleIds.length) {
-        const embed = new EmbedBuilder()
-          .setColor(embedColors.error)
-          .setTitle('Invalid Role(s)')
-          .setDescription(`No valid roles found: ${failedRoles.map(n => `\`${n}\``).join(', ')}.\nPlease mention or type exact role names.`);
-        await interaction.reply({ embeds: [embed], ephemeral: true });
-        return;
-      }
-      if (!config.Locks) config.Locks = {};
-      config.Locks.roles = roleIds;
-      await config.save();
-      const embed = new EmbedBuilder()
-        .setColor(embedColors.success)
-        .setTitle('Lock Roles Updated')
-        .setDescription(`Lock/unlock commands will now affect: ${roleIds.map(id => `<@&${id}>`).join(', ')}`);
-      await interaction.reply({ embeds: [embed], ephemeral: false });
-      return;
-    }
-
     const rolesInput = interaction.options.getString('roles');
     const permsInput = interaction.options.getString('permissions');
 
@@ -179,5 +114,3 @@ module.exports = {
     await interaction.reply({ embeds: [embed], ephemeral: false });
   }
 };
-
-// Permissions are saved in mongoose at: GuildConfig.Permissions[command][subcommand] or GuildConfig.Permissions[command]
