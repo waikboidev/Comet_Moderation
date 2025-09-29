@@ -36,7 +36,7 @@ async function commandHandler(client) {
     logger.info('Started refreshing application (/) commands.');
 
     await rest.put(
-      Routes.applicationGuildCommands(process.env.BOT_ID, process.env.GUILD_ID),
+      Routes.applicationCommands(process.env.BOT_ID),
       { body: commands },
     );
 
