@@ -142,7 +142,7 @@ module.exports = {
     if (sub === 'settings') {
       const settings = await getUserSettings(userId);
       const embed = new EmbedBuilder()
-        .setColor(embedColors.info)
+        .setColor(embedColors.fail)
         .setTitle('Timezone Settings')
         .addFields(
           { name: `${emojis.timezoneLocation} Your Timezone`, value: settings.timezone || 'Not Set', inline: true },
