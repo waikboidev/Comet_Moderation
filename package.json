@@ -19,8 +19,8 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "register": "node src/scripts/register-commands.ts",
-    "clear": "node src/scripts/clear-commands.ts"
+    "register": "node src/scripts/register-commands.js",
+    "clear": "node src/scripts/clear-commands.js"
   },
   "keywords": [],
   "author": "",
