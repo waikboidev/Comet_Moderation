@@ -176,7 +176,7 @@ async function execute(interaction) {
         });
     } else if (sub === 'embed') {
         const embed = new EmbedBuilder();
-        const color = interaction.options.getString('color') || '#882935';
+        const color = interaction.options.getString('color')
         embed.setColor(color);
 
         const author = interaction.options.getString('author');
