@@ -13,6 +13,13 @@ async function clearCommands() {
       { body: [] },
     );
 
+    await rest.put(
+      Routes.applicationCommands(process.env.BOT_ID),
+      { body: [] },
+    );
+
+    
+
     logger.success('Successfully cleared application (/) commands.');
   } catch (error) {
     logger.error('Failed to clear application (/) commands.', error);
