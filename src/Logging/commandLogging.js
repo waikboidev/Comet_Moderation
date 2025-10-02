@@ -16,14 +16,22 @@ async function sendCommandLog(guild, embed) {
 }
 
 // Log command execution
-async function logCommandExecution({ guild, channel, user, commandName, prefixUsed, messageContent, category }) {
+async function logCommandExecution({ guild, channel, user, commandName, subcommand, options, prefixUsed, messageContent, category }) {
+    let content;
+    if (prefixUsed) {
+        content = messageContent || 'None';
+    } else {
+        const sub = subcommand ? `${subcommand} ` : '';
+        const opts = options?._hoistedOptions.map(o => `${o.name}:${o.value}`).join(' ') || '';
+        content = `/${commandName} ${sub}${opts}`;
+    }
+
     const embed = new EmbedBuilder()
-        .setAuthor({ name: `@${user.tag}`, iconURL: user.displayAvatarURL() })
-        .setTitle(`${category} Command Executed`)
-        .setDescription(`**@${user.tag}** executed a command in ${channel ? `<#${channel.id}>` : 'unknown channel'}.`)
-        .addFields(
-            { name: 'Command', value: prefixUsed ? `${prefixUsed}${commandName}` : `/${commandName}`, inline: false },
-            { name: 'Message Content', value: messageContent || 'None', inline: false }
+        .setAuthor({ name: user.tag, iconURL: user.displayAvatarURL() })
+        .setDescription(
+            `**${user.tag}** (\`${user.id}\`) executed a command in <#${channel.id}>.\n\n` +
+            `**Command**\n\`${prefixUsed ? `${prefixUsed}${commandName}` : `/${commandName}`}\`\n\n` +
+            `**Message Content**\n${content}\n`
         )
         .setColor('#9a80fe')
         .setTimestamp();

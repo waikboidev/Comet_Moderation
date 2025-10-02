@@ -108,35 +108,42 @@ module.exports = {
       const location = interaction.options.getString('location');
       const zone = await setUserTimezone(userId, location);
       if (!zone) {
-        return interaction.reply({ content: `${emojis.timezoneFail} Invalid timezone. Please use a valid city, region, or IANA timezone name.`, ephemeral: true });
+        const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.timezoneFail} Invalid timezone. Please use a valid city, region, or IANA timezone name.`);
+        return interaction.reply({ embeds: [embed], ephemeral: true });
       }
       const settings = await getUserSettings(userId);
       const currentTime = getCurrentTime(settings);
-      return interaction.reply({ content: `${emojis.timezoneSuccess} Your timezone has been set to **${zone}**. Your current time is **${currentTime}**.`, ephemeral: false });
+      const embed = new EmbedBuilder().setColor(embedColors.success).setDescription(`${emojis.timezoneSuccess} Your timezone has been set to **${zone}**. Your current time is **${currentTime}**.`);
+      return interaction.reply({ embeds: [embed], ephemeral: false });
     }
 
     if (sub === 'show') {
       const settings = await getUserSettings(userId);
       if (!settings.timezone) {
-        return interaction.reply({ content: `${emojis.timezoneFail} You haven't set your timezone yet. Use \`/timezone set\`.`, ephemeral: true });
+        const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.timezoneFail} You haven't set your timezone yet. Use \`/timezone set\`.`);
+        return interaction.reply({ embeds: [embed], ephemeral: true });
       }
       const currentTime = getCurrentTime(settings);
-      return interaction.reply({ content: `${emojis.clock} Your current time is **${currentTime}**.`, ephemeral: false });
+      const embed = new EmbedBuilder().setColor(embedColors.info).setDescription(`${emojis.clock} Your current time is **${currentTime}**.`);
+      return interaction.reply({ embeds: [embed], ephemeral: false });
     }
     
     if (sub === 'user') {
         const targetUser = interaction.options.getUser('user');
         const settings = await getUserSettings(targetUser.id);
         if (!settings.timezone) {
-            return interaction.reply({ content: `${emojis.timezoneFail} ${targetUser} has not set their timezone.`, ephemeral: true });
+            const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.timezoneFail} ${targetUser} has not set their timezone.`);
+            return interaction.reply({ embeds: [embed], ephemeral: true });
         }
         const currentTime = getCurrentTime(settings);
-        return interaction.reply({ content: `${emojis.clock} ${targetUser}'s current time is **${currentTime}**.`, ephemeral: false });
+        const embed = new EmbedBuilder().setColor(embedColors.info).setDescription(`${emojis.clock} ${targetUser}'s current time is **${currentTime}**.`);
+        return interaction.reply({ embeds: [embed], ephemeral: false });
     }
 
     if (sub === 'clear') {
       await clearUserTimezone(userId);
-      return interaction.reply({ content: `${emojis.timezoneSuccess} Your timezone has been cleared.`, ephemeral: false });
+      const embed = new EmbedBuilder().setColor(embedColors.success).setDescription(`${emojis.timezoneSuccess} Your timezone has been cleared.`);
+      return interaction.reply({ embeds: [embed], ephemeral: false });
     }
 
     if (sub === 'settings') {
@@ -181,19 +188,23 @@ module.exports = {
         const targetLocation = interaction.options.getString('target');
         const userSettings = await getUserSettings(userId);
         if (!userSettings.timezone) {
-            return interaction.reply({ content: `${emojis.timezoneFail} You must set your timezone first with \`/timezone set\`.`, ephemeral: true });
+            const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.timezoneFail} You must set your timezone first with \`/timezone set\`.`);
+            return interaction.reply({ embeds: [embed], ephemeral: true });
         }
         const targetZone = findTimezone(targetLocation);
         if (!targetZone) {
-            return interaction.reply({ content: `${emojis.timezoneFail} Invalid target timezone.`, ephemeral: true });
+            const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.timezoneFail} Invalid target timezone.`);
+            return interaction.reply({ embeds: [embed], ephemeral: true });
         }
         const time = moment.tz(timeInput, ['h:mm A', 'h:mmA', 'H:mm', 'HH:mm'], userSettings.timezone);
         if (!time.isValid()) {
-            return interaction.reply({ content: `${emojis.timezoneFail} Invalid time format. Use formats like "10:30pm" or "22:30".`, ephemeral: true });
+            const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.timezoneFail} Invalid time format. Use formats like "10:30pm" or "22:30".`);
+            return interaction.reply({ embeds: [embed], ephemeral: true });
         }
         const convertedTime = time.clone().tz(targetZone);
         const format = userSettings.timeFormat === '12HR' ? 'h:mm A' : 'HH:mm';
-        return interaction.reply({ content: `\`${time.format(format)}\` in your timezone is \`${convertedTime.format(format)}\` in **${targetZone}**.`, ephemeral: false });
+        const embed = new EmbedBuilder().setColor(embedColors.info).setDescription(`\`${time.format(format)}\` in your timezone is \`${convertedTime.format(format)}\` in **${targetZone}**.`);
+        return interaction.reply({ embeds: [embed], ephemeral: false });
     }
   },
 
@@ -223,44 +234,58 @@ module.exports = {
     if (!subCommand) { // -tz
       const settings = await getUserSettings(userId);
       if (!settings.timezone) {
-        return message.channel.send(`${emojis.timezoneFail} You haven't set your timezone yet. Use \`-tz set <location>\`.`);
+        const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.timezoneFail} You haven't set your timezone yet. Use \`-tz set <location>\`.`);
+        return message.channel.send({ embeds: [embed] });
       }
       const currentTime = getCurrentTime(settings);
-      return message.channel.send(`${emojis.clock} Your current time is **${currentTime}**.`);
+      const embed = new EmbedBuilder().setColor(embedColors.info).setDescription(`${emojis.clock} Your current time is **${currentTime}**.`);
+      return message.channel.send({ embeds: [embed] });
     }
 
     if (subCommand === 'set' || (subCommand === 'global' && fullArgs[0]?.toLowerCase() === 'set')) {
       if (subCommand === 'global') fullArgs.shift(); // remove 'set'
       const location = fullArgs.join(' ');
-      if (!location) return message.channel.send(`${emojis.timezoneAlert} Please provide a location.`);
+      if (!location) {
+        const embed = new EmbedBuilder().setColor(embedColors.warning).setDescription(`${emojis.timezoneAlert} Please provide a location.`);
+        return message.channel.send({ embeds: [embed] });
+      }
       const zone = await setUserTimezone(userId, location);
       if (!zone) {
-        return message.channel.send(`${emojis.timezoneFail} Invalid timezone.`);
+        const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.timezoneFail} Invalid timezone.`);
+        return message.channel.send({ embeds: [embed] });
       }
       const settings = await getUserSettings(userId);
       const currentTime = getCurrentTime(settings);
-      return message.channel.send(`${emojis.timezoneSuccess} Your timezone has been set to **${zone}**. Your current time is **${currentTime}**.`);
+      const embed = new EmbedBuilder().setColor(embedColors.success).setDescription(`${emojis.timezoneSuccess} Your timezone has been set to **${zone}**. Your current time is **${currentTime}**.`);
+      return message.channel.send({ embeds: [embed] });
     }
     
     if (subCommand === 'convert') {
-        if (fullArgs.length < 2) return message.channel.send(`${emojis.timezoneFail} Usage: \`-tz convert <time> <target_timezone>\``);
+        if (fullArgs.length < 2) {
+            const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.timezoneFail} Usage: \`-tz convert <time> <target_timezone>\``);
+            return message.channel.send({ embeds: [embed] });
+        }
         const timeInput = fullArgs[0];
         const targetLocation = fullArgs.slice(1).join(' ');
         const userSettings = await getUserSettings(userId);
         if (!userSettings.timezone) {
-            return message.channel.send(`${emojis.timezoneAlert} You must set your timezone first with \`-tz set\`.`);
+            const embed = new EmbedBuilder().setColor(embedColors.warning).setDescription(`${emojis.timezoneAlert} You must set your timezone first with \`-tz set\`.`);
+            return message.channel.send({ embeds: [embed] });
         }
         const targetZone = findTimezone(targetLocation);
         if (!targetZone) {
-            return message.channel.send(`${emojis.timezoneFail} Invalid target timezone.`);
+            const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.timezoneFail} Invalid target timezone.`);
+            return message.channel.send({ embeds: [embed] });
         }
         const time = moment.tz(timeInput, ['h:mm A', 'h:mmA', 'H:mm', 'HH:mm'], userSettings.timezone);
         if (!time.isValid()) {
-            return message.channel.send(`${emojis.timezoneFail} Invalid time format. Use formats like "10:30pm" or "22:30".`);
+            const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.timezoneFail} Invalid time format. Use formats like "10:30pm" or "22:30".`);
+            return message.channel.send({ embeds: [embed] });
         }
         const convertedTime = time.clone().tz(targetZone);
         const format = userSettings.timeFormat === '12HR' ? 'h:mm A' : 'HH:mm';
-        return message.channel.send(`\`${time.format(format)}\` in your timezone is \`${convertedTime.format(format)}\` in **${targetZone}**.`);
+        const embed = new EmbedBuilder().setColor(embedColors.info).setDescription(`\`${time.format(format)}\` in your timezone is \`${convertedTime.format(format)}\` in **${targetZone}**.`);
+        return message.channel.send({ embeds: [embed] });
     }
 
     // Handle -tz <user>
@@ -268,10 +293,12 @@ module.exports = {
     if (member) {
         const settings = await getUserSettings(member.id);
         if (!settings.timezone) {
-            return message.channel.send(`${emojis.timezoneFail} ${member.user} has not set their timezone.`);
+            const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.timezoneFail} ${member.user} has not set their timezone.`);
+            return message.channel.send({ embeds: [embed] });
         }
         const currentTime = getCurrentTime(settings);
-        return message.channel.send(`${emojis.clock} ${member.user}'s current time is **${currentTime}**.`);
+        const embed = new EmbedBuilder().setColor(embedColors.info).setDescription(`${emojis.clock} ${member.user}'s current time is **${currentTime}**.`);
+        return message.channel.send({ embeds: [embed] });
     }
   }
 };
