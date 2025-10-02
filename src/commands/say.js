@@ -164,7 +164,7 @@ async function execute(interaction) {
     const channel = interaction.options.getChannel('channel');
 
     if (sub === 'message') {
-        const content = interaction.options.getString('content') || '';
+        const content = (interaction.options.getString('content') || '').replace(/\\n/g, '\n');
         await channel.send({ content });
         await interaction.reply({
             embeds: [
@@ -176,22 +176,22 @@ async function execute(interaction) {
         });
     } else if (sub === 'embed') {
         const embed = new EmbedBuilder();
-        const color = interaction.options.getString('color');
-        if (color) embed.setColor(color);
+        const color = interaction.options.getString('color') || '#882935';
+        embed.setColor(color);
 
         const author = interaction.options.getString('author');
         const author_icon = interaction.options.getString('author_icon');
-        if (author) embed.setAuthor({ name: author, iconURL: author_icon || undefined });
+        if (author) embed.setAuthor({ name: author.replace(/\\n/g, '\n'), iconURL: author_icon || undefined });
 
         const title = interaction.options.getString('title');
-        if (title) embed.setTitle(title);
+        if (title) embed.setTitle(title.replace(/\\n/g, '\n'));
 
         const description = interaction.options.getString('description');
-        if (description) embed.setDescription(description);
+        if (description) embed.setDescription(description.replace(/\\n/g, '\n'));
 
         const footer = interaction.options.getString('footer');
         const footer_icon = interaction.options.getString('footer_icon');
-        if (footer) embed.setFooter({ text: footer, iconURL: footer_icon || undefined });
+        if (footer) embed.setFooter({ text: footer.replace(/\\n/g, '\n'), iconURL: footer_icon || undefined });
 
         const image = interaction.options.getString('image');
         if (image) embed.setImage(image);
@@ -222,11 +222,11 @@ async function execute(interaction) {
             const value = interaction.options.getString(`field${i}_value`);
             const inline = interaction.options.getBoolean(`field${i}_inline`) || false;
             if (name && value) {
-                embed.addFields({ name, value, inline });
+                embed.addFields({ name: name.replace(/\\n/g, '\n'), value: value.replace(/\\n/g, '\n'), inline });
             }
         }
 
-        const content = interaction.options.getString('content') || undefined;
+        const content = interaction.options.getString('content')?.replace(/\\n/g, '\n') || undefined;
         await channel.send({ content, embeds: [embed] });
         await interaction.reply({
             embeds: [
