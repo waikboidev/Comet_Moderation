@@ -16,7 +16,7 @@ async function sendPaginatedReply(source, role, members, user) {
         const end = start + MEMBERS_PER_PAGE;
         const currentMembers = members.slice(start, end);
 
-        const memberList = currentMembers.map(member => `${member.toString()} (\`${member.user.tag}\`)`).join('\n');
+        const memberList = currentMembers.map(member => `**@${member.user.tag}** (\`${member.id}\`)`).join('\n');
         const memberCountText = totalMembers === 1 ? '1 member' : `${totalMembers} members`;
 
         return new EmbedBuilder()
