@@ -23,7 +23,7 @@ const helpEmbeds = {
   information: new EmbedBuilder()
     .setColor(embedColors.info)
     .setTitle('Information Commands')
-    .setDescription('`/whois`, `/serverinfo`, `/channelinfo`, `/avatar`, `/emotes`, `/inviteinfo`, `/membercount`, `/roleinfo`, `/uptime`, `/ping`')
+    .setDescription('`/whois`, `/serverinfo`, `/channelinfo`, `/avatar`, `/emotes`, `/inviteinfo`, `/membercount`, `/roleinfo`, `/uptime`, `/ping`, `/rolemembers`')
 };
 
 module.exports = {

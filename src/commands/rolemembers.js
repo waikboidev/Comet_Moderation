@@ -72,7 +72,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('rolemembers')
         .setDescription('Shows all members who have a specific role.')
-        .addRoleOption(opt =>
+        .addStringOption(opt =>
             opt.setName('role')
                 .setDescription('The role to get members from.')
                 .setRequired(true)
@@ -97,8 +97,16 @@ module.exports = {
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
-        const role = interaction.options.getRole('role');
-        await interaction.guild.members.fetch();
+        const roleId = interaction.options.getString('role');
+        const role = interaction.guild.roles.cache.get(roleId);
+
+        if (!role) {
+            const embed = new EmbedBuilder()
+                .setColor(embedColors.error)
+                .setDescription(`${emojis.fail} Could not find the specified role. Please select one from the list.`);
+            return interaction.reply({ embeds: [embed], ephemeral: true });
+        }
+
         const membersWithRole = role.members.map(m => m);
 
         if (membersWithRole.length === 0) {
@@ -141,7 +149,6 @@ module.exports = {
             return message.channel.send({ embeds: [embed] });
         }
 
-        await message.guild.members.fetch();
         const membersWithRole = role.members.map(m => m);
 
         if (membersWithRole.length === 0) {
