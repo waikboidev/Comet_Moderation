@@ -140,9 +140,14 @@ module.exports = {
             return message.channel.send({ embeds: [embed] });
         }
 
-        const role = message.mentions.roles.first() ||
+        let role = message.mentions.roles.first() ||
                      message.guild.roles.cache.get(roleQuery) ||
                      message.guild.roles.cache.find(r => r.name.toLowerCase() === roleQuery.toLowerCase());
+
+        // If no exact match, try partial match
+        if (!role) {
+            role = message.guild.roles.cache.find(r => r.name.toLowerCase().includes(roleQuery.toLowerCase()));
+        }
 
         if (!role) {
             const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.fail} Could not find a role matching "${roleQuery}".`);
