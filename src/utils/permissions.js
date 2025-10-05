@@ -50,6 +50,9 @@ async function hasPermission(source, commandName, subcommandName = null) {
   if (['lock', 'unlock', 'purge'].includes(commandName)) {
       return member.permissions.has(PermissionFlagsBits.ManageMessages) || member.permissions.has(PermissionFlagsBits.ManageChannels);
   }
+  if (commandName === 'rolemembers') {
+    return member.permissions.has(PermissionFlagsBits.ManageRoles) || member.permissions.has(PermissionFlagsBits.Administrator);
+  }
 
   // If no specific default, allow usage.
   return true;
