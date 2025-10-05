@@ -17,10 +17,11 @@ async function sendPaginatedReply(source, role, members, user) {
         const currentMembers = members.slice(start, end);
 
         const memberList = currentMembers.map(member => `${member.toString()} (\`${member.user.tag}\`)`).join('\n');
+        const memberCountText = totalMembers === 1 ? '1 member' : `${totalMembers} members`;
 
         return new EmbedBuilder()
             .setColor(role.color || embedColors.info)
-            .setAuthor({ name: `${role.name} (${totalMembers} members)`, iconURL: role.iconURL() || role.guild.iconURL() })
+            .setAuthor({ name: `${role.name} (${memberCountText})`, iconURL: role.iconURL() || role.guild.iconURL() })
             .setDescription(memberList || 'No members to display on this page.')
             .setFooter({ text: `Page ${page}/${totalPages} | Requested by ${user.tag}`, iconURL: user.displayAvatarURL() });
     };
@@ -97,6 +98,8 @@ module.exports = {
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
+        await interaction.deferReply();
+
         const roleId = interaction.options.getString('role');
         const role = interaction.guild.roles.cache.get(roleId);
 
@@ -104,20 +107,20 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setColor(embedColors.error)
                 .setDescription(`${emojis.fail} Could not find the specified role. Please select one from the list.`);
-            return interaction.reply({ embeds: [embed], ephemeral: true });
+            return interaction.editReply({ embeds: [embed] });
         }
 
+        // Fetch all members to ensure the cache is populated
+        await interaction.guild.members.fetch();
         const membersWithRole = role.members.map(m => m);
 
         if (membersWithRole.length === 0) {
             const embed = new EmbedBuilder()
                 .setColor(embedColors.warning)
                 .setDescription(`${emojis.warning} There are no members with the **${role.name}** role.`);
-            return interaction.reply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [embed] });
         }
         
-        // Defer reply as pagination can take time
-        await interaction.deferReply();
         await sendPaginatedReply(interaction, role, membersWithRole, interaction.user);
     },
 
@@ -154,6 +157,8 @@ module.exports = {
             return message.channel.send({ embeds: [embed] });
         }
 
+        // Fetch all members to ensure the cache is populated
+        await message.guild.members.fetch();
         const membersWithRole = role.members.map(m => m);
 
         if (membersWithRole.length === 0) {
