@@ -2,6 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Butt
 const { hasPermission } = require('../utils/permissions');
 const GuildConfig = require('../schemas/GuildConfig');
 const embedColors = require('../../embedColors');
+const emojis = require('../../emojis');
 
 const MEMBERS_PER_PAGE = 20;
 
@@ -29,8 +30,14 @@ async function sendPaginatedReply(source, role, members, user) {
         new ButtonBuilder().setCustomId('next_page').setLabel('<:right:1424293602120433764>').setStyle(ButtonStyle.Secondary).setDisabled(totalPages <= 1)
     );
 
-    const replyOptions = { embeds: [generateEmbed(currentPage)], components: totalPages > 1 ? [row] : [] };
-    const reply = source.channel ? await source.channel.send(replyOptions) : await source.reply(replyOptions);
+    const replyOptions = { embeds: [generateEmbed(currentPage)], components: totalPages > 1 ? [row] : [], fetchReply: true };
+
+    let reply;
+    if (source.isCommand && source.isCommand()) { // It's an interaction
+        reply = source.deferred ? await source.editReply(replyOptions) : await source.reply(replyOptions);
+    } else { // It's a message
+        reply = await source.channel.send(replyOptions);
+    }
 
     if (totalPages <= 1) return;
 
@@ -69,13 +76,24 @@ module.exports = {
             opt.setName('role')
                 .setDescription('The role to get members from.')
                 .setRequired(true)
+                .setAutocomplete(true)
         ),
+
+    async autocomplete(interaction) {
+        const focusedValue = interaction.options.getFocused();
+        const roles = interaction.guild.roles.cache;
+        const filtered = roles.filter(role => role.name.toLowerCase().startsWith(focusedValue.toLowerCase())).slice(0, 25);
+
+        await interaction.respond(
+            filtered.map(role => ({ name: role.name, value: role.id })),
+        );
+    },
 
     async execute(interaction) {
         if (!await hasPermission(interaction, 'rolemembers')) {
             const embed = new EmbedBuilder()
                 .setColor(embedColors.error)
-                .setDescription('<:fail:1420911452050686034> You do not have permission to use this command.');
+                .setDescription(`${emojis.fail} You do not have permission to use this command.`);
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
@@ -86,13 +104,12 @@ module.exports = {
         if (membersWithRole.length === 0) {
             const embed = new EmbedBuilder()
                 .setColor(embedColors.warning)
-                .setDescription(`<:warning:1421637344292765859> There are no members with the **${role.name}** role.`);
+                .setDescription(`${emojis.warning} There are no members with the **${role.name}** role.`);
             return interaction.reply({ embeds: [embed] });
         }
         
         // Defer reply as pagination can take time
         await interaction.deferReply();
-        await interaction.deleteReply(); // Delete the "thinking" message
         await sendPaginatedReply(interaction, role, membersWithRole, interaction.user);
     },
 
@@ -111,7 +128,7 @@ module.exports = {
 
         const roleQuery = args.join(' ');
         if (!roleQuery) {
-            const embed = new EmbedBuilder().setColor(embedColors.error).setDescription('<:fail:1420911452050686034> Please provide a role name, ID, or mention.');
+            const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.fail} Please provide a role name, ID, or mention.`);
             return message.channel.send({ embeds: [embed] });
         }
 
@@ -120,7 +137,7 @@ module.exports = {
                      message.guild.roles.cache.find(r => r.name.toLowerCase() === roleQuery.toLowerCase());
 
         if (!role) {
-            const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`<:fail:1420911452050686034> Could not find a role matching "${roleQuery}".`);
+            const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.fail} Could not find a role matching "${roleQuery}".`);
             return message.channel.send({ embeds: [embed] });
         }
 
@@ -130,7 +147,7 @@ module.exports = {
         if (membersWithRole.length === 0) {
             const embed = new EmbedBuilder()
                 .setColor(embedColors.warning)
-                .setDescription(`<:warning:1421637344292765859> There are no members with the **${role.name}** role.`);
+                .setDescription(`${emojis.warning} There are no members with the **${role.name}** role.`);
             return message.channel.send({ embeds: [embed] });
         }
 
