@@ -86,8 +86,7 @@ module.exports = {
         .setDescription('Get random facts.')
         .addSubcommand(sub => sub.setName('catfact').setDescription('Get a random cat fact.'))
         .addSubcommand(sub => sub.setName('dogfact').setDescription('Get a random dog fact.'))
-        .addSubcommand(sub => sub.setName('worldfact').setDescription('Get a random useless fact.'))
-        .addSubcommand(sub => sub.setName('randomfact').setDescription('Get a random fact or activity suggestion.')),
+        .addSubcommand(sub => sub.setName('worldfact').setDescription('Get a random useless fact.')),
 
     async execute(interaction) {
         if (!await hasPermission(interaction, 'fun')) {
