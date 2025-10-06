@@ -104,6 +104,13 @@ module.exports = {
     const sub = interaction.options.getSubcommand();
     const userId = interaction.user.id;
 
+    if (!await hasPermission(interaction, 'timezone', sub)) {
+        const embed = new EmbedBuilder()
+            .setColor(embedColors.error)
+            .setDescription(`${emojis.fail} You do not have permission to use this command.`);
+        return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
+
     if (sub === 'set') {
       const location = interaction.options.getString('location');
       const zone = await setUserTimezone(userId, location);
@@ -210,24 +217,25 @@ module.exports = {
 
   async prefixHandler(message) {
     const config = await GuildConfig.findOne({ guildId: message.guild.id });
-    if (!config?.PrefixEnabled || !message.content.startsWith('-tz')) return;
+    if (!config?.PrefixEnabled) return;
+
+    const prefix = config.Prefix || 'c-';
+    if (!message.content.startsWith(prefix + 'tz')) return;
 
     // Example of securing a prefix-only command/subcommand
     // Let's say 'set' and 'clear' should be restricted
-    const args = message.content.slice('-tz'.length).trim().split(/ +/);
+    const args = message.content.slice((prefix + 'tz').length).trim().split(/ +/);
     const command = args[0]?.toLowerCase();
 
-    if (['set', 'clear', 'global'].includes(command)) {
-        if (!await hasPermission(message, 'timezone', command)) {
-            // Silently fail or send an error message
-            return;
-        }
+    if (!await hasPermission(message, 'timezone', command || null)) {
+        // Silently fail or send an error message
+        return;
     }
 
-    await logCommand(message.guild, message.channel, message.author, '-tz', message.content);
+    await logCommand(message.guild, message.channel, message.author, prefix + 'tz', message.content);
 
     // Reset args for logic below
-    const fullArgs = message.content.slice('-tz'.length).trim().split(/ +/);
+    const fullArgs = message.content.slice((prefix + 'tz').length).trim().split(/ +/);
     const subCommand = fullArgs.shift()?.toLowerCase();
     const userId = message.author.id;
 

@@ -4,6 +4,8 @@ const { SlashCommandBuilder, EmbedBuilder, GuildVerificationLevel, GuildExplicit
 const GuildConfig = require('../schemas/GuildConfig');
 const embedColors = require('../../embedColors');
 require("dotenv").config();
+const { hasPermission } = require('../utils/permissions');
+const emojis = require('../../emojis');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -11,6 +13,12 @@ module.exports = {
     .setDescription("Shows detailed information about the current server."),
 
   async execute(i) {
+    if (!await hasPermission(i, 'serverinfo')) {
+        const embed = new EmbedBuilder()
+            .setColor(embedColors.error)
+            .setDescription(`${emojis.fail} You do not have permission to use this command.`);
+        return i.reply({ embeds: [embed], ephemeral: true });
+    }
     const guild = i.guild;
 
     if (!guild) {
@@ -170,6 +178,7 @@ module.exports = {
       content === `${prefix}serverinfo` ||
       content === `${prefix}si`
     ) {
+      if (!await hasPermission(message, 'serverinfo')) return;
       // Simulate the slash command embed reply
       const guild = message.guild;
       const fetchedGuild = await guild.fetch().catch(() => null);

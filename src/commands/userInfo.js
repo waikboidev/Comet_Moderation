@@ -3,6 +3,8 @@ const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField, UserFlags, Color
 const GuildConfig = require('../schemas/GuildConfig');
 const embedColors = require('../../embedColors');
 require("dotenv").config();
+const { hasPermission } = require('../utils/permissions');
+const emojis = require('../../emojis');
 
 // Map Discord User Flags (Badges) to their names and custom emojis (replace with your server's emojis or Unicode)
 const userBadges = {
@@ -36,6 +38,12 @@ module.exports = {
         ),
 
     async execute(interaction) {
+        if (!await hasPermission(interaction, 'whois')) {
+            const embed = new EmbedBuilder()
+                .setColor(embedColors.error)
+                .setDescription(`${emojis.fail} You do not have permission to use this command.`);
+            return interaction.reply({ embeds: [embed], ephemeral: true });
+        }
         await interaction.deferReply({ ephemeral: false }); // Defer reply as we might fetch data
 
         const targetUser = interaction.options.getUser("user");
@@ -211,6 +219,7 @@ module.exports = {
 
         // Accept {prefix}whois or {prefix}userinfo
         if (content.toLowerCase().startsWith(`${prefix}whois`) || content.toLowerCase().startsWith(`${prefix}userinfo`)) {
+            if (!await hasPermission(message, 'whois')) return;
             // Extract argument (user identifier)
             const args = content.split(' ').slice(1);
             let userId = null;

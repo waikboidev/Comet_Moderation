@@ -1,12 +1,20 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const GuildConfig = require('../schemas/GuildConfig');
 const embedColors = require('../../embedColors');
+const { hasPermission } = require('../utils/permissions');
+const emojis = require('../../emojis');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('uptime')
     .setDescription('Shows how long the bot has been online.'),
   async execute(interaction) {
+    if (!await hasPermission(interaction, 'uptime')) {
+        const embed = new EmbedBuilder()
+            .setColor(embedColors.error)
+            .setDescription(`${emojis.fail} You do not have permission to use this command.`);
+        return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
     const uptime = interaction.client.uptime;
     const embed = createUptimeEmbed(uptime);
     await interaction.reply({ embeds: [embed] });
@@ -19,6 +27,7 @@ module.exports = {
     if (!config?.PrefixEnabled) return;
     const prefix = config?.Prefix || 'c-';
     if (message.content.trim().toLowerCase() === `${prefix}uptime`) {
+      if (!await hasPermission(message, 'uptime')) return;
       const uptime = message.client.uptime;
       const embed = createUptimeEmbed(uptime);
       await message.channel.send({ embeds: [embed] });

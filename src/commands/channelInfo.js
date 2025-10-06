@@ -1,6 +1,8 @@
 const { SlashCommandBuilder, EmbedBuilder, ChannelType } = require('discord.js');
 const GuildConfig = require('../schemas/GuildConfig');
 const embedColors = require('../../embedColors');
+const { hasPermission } = require('../utils/permissions');
+const emojis = require('../../emojis');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -12,6 +14,12 @@ module.exports = {
         .setRequired(false)
     ),
   async execute(interaction) {
+    if (!await hasPermission(interaction, 'channelinfo')) {
+        const embed = new EmbedBuilder()
+            .setColor(embedColors.error)
+            .setDescription(`${emojis.fail} You do not have permission to use this command.`);
+        return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
     const channel = interaction.options.getChannel('channel') || interaction.channel;
     const embed = createChannelInfoEmbed(channel);
     await interaction.reply({ embeds: [embed] });
@@ -25,6 +33,7 @@ module.exports = {
     const prefix = config?.Prefix || 'c-';
     const args = message.content.trim().split(/\s+/);
     if (args[0].toLowerCase() === `${prefix}channelinfo`) {
+      if (!await hasPermission(message, 'channelinfo')) return;
       const channel = message.mentions.channels.first() || message.channel;
       const embed = createChannelInfoEmbed(channel);
       await message.channel.send({ embeds: [embed] });
