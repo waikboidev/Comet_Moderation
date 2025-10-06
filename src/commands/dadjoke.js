@@ -5,13 +5,36 @@ const GuildConfig = require('../schemas/GuildConfig');
 const embedColors = require('../../embedColors');
 const emojis = require('../../emojis');
 
-async function handleJokeCommand(source) {
-    const user = source.user || source.author;
-    try {
+const forbiddenWords = ['dog', 'cat', 'penis', 'eat', 'whale'];
+
+async function getFilteredJoke() {
+    for (let i = 0; i < 10; i++) { // Try up to 10 times
         const response = await axios.get('https://icanhazdadjoke.com/', {
             headers: { 'Accept': 'application/json' }
         });
         const joke = response.data.joke;
+        if (joke && !forbiddenWords.some(word => joke.toLowerCase().includes(word))) {
+            return joke;
+        }
+    }
+    return null; // Return null if no suitable joke is found
+}
+
+async function handleJokeCommand(source) {
+    const user = source.user || source.author;
+    try {
+        const joke = await getFilteredJoke();
+
+        if (!joke) {
+            const errorEmbed = new EmbedBuilder()
+                .setColor(embedColors.error)
+                .setDescription(`${emojis.fail} Could not fetch a suitable joke at this time. Please try again later.`);
+            if (source.isCommand && source.isCommand()) {
+                return source.reply({ embeds: [errorEmbed], ephemeral: true });
+            } else {
+                return source.channel.send({ embeds: [errorEmbed] });
+            }
+        }
 
         const embed = new EmbedBuilder()
             .setColor(embedColors.info)
