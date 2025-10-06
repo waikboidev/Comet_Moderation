@@ -10,7 +10,8 @@ const helpEmbeds = {
     .addFields(
       { name: 'Moderation', value: 'Commands for server moderation.', inline: true },
       { name: 'Utility', value: 'Useful utility commands.', inline: true },
-      { name: 'Information', value: 'Commands to get information.', inline: true }
+      { name: 'Information', value: 'Commands to get information.', inline: true },
+      { name: 'Fun', value: 'Commands for fun and entertainment.', inline: true }
     ),
   moderation: new EmbedBuilder()
     .setColor(embedColors.info)
@@ -23,7 +24,11 @@ const helpEmbeds = {
   information: new EmbedBuilder()
     .setColor(embedColors.info)
     .setTitle('Information Commands')
-    .setDescription('`/whois`, `/serverinfo`, `/channelinfo`, `/avatar`, `/emotes`, `/inviteinfo`, `/membercount`, `/roleinfo`, `/uptime`, `/ping`, `/rolemembers`')
+    .setDescription('`/whois`, `/serverinfo`, `/channelinfo`, `/avatar`, `/emotes`, `/inviteinfo`, `/membercount`, `/roleinfo`, `/uptime`, `/ping`, `/rolemembers`'),
+  fun: new EmbedBuilder()
+    .setColor(embedColors.info)
+    .setTitle('Fun Commands')
+    .setDescription('`/fun catfact`, `/fun dogfact`, `/fun worldfact`, `/dadjoke`')
 };
 
 module.exports = {
@@ -37,7 +42,8 @@ module.exports = {
         .addChoices(
           { name: 'Moderation', value: 'moderation' },
           { name: 'Utility', value: 'utility' },
-          { name: 'Information', value: 'information' }
+          { name: 'Information', value: 'information' },
+          { name: 'Fun', value: 'fun' }
         )
     ),
   async execute(interaction) {

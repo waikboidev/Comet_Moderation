@@ -37,6 +37,8 @@ async function eventHandler(client) {
     const help = require('../commands/help');
     const timezone = require('../commands/timezone');
     const rolemembers = require('../commands/rolemembers');
+    const fun = require('../commands/fun');
+    const dadjoke = require('../commands/dadjoke');
     client.on('messageCreate', async (message) => {
       await ping.prefixHandler?.(message);
       await serverInfo.prefixHandler?.(message);
@@ -49,6 +51,8 @@ async function eventHandler(client) {
       await help.prefixHandler?.(message);
       await timezone.prefixHandler?.(message);
       await rolemembers.prefixHandler?.(message);
+      await fun.prefixHandler?.(message);
+      await dadjoke.prefixHandler?.(message);
       // Add more prefixHandler calls for other commands as needed
     });
     client._prefixHandlerRegistered = true;
