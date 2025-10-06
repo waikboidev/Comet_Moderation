@@ -41,12 +41,3 @@ module.exports = {
     }
   },
 };
-      console.error(error);
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp({ content: '<:fail:1420911452050686034> There was an error while executing this command!', ephemeral: true });
-      } else {
-        await interaction.reply({ content: '<:fail:1420911452050686034> There was an error while executing this command!', ephemeral: true });
-      }
-    }
-  },
-};
