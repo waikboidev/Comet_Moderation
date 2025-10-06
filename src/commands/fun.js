@@ -5,17 +5,18 @@ const GuildConfig = require('../schemas/GuildConfig');
 const embedColors = require('../../embedColors');
 const emojis = require('../../emojis');
 
-const forbiddenWords = ['dog', 'cat', 'penis', 'eat', 'whale', 'sex', 'sexual'];
+const forbiddenWords = ['penis', 'eat', 'whale', 'sex', 'sexual'];
 
 const factAPIs = {
     catfact: { url: 'https://catfact.ninja/fact', key: 'fact', title: '🐱 Cat Fact' },
     dogfact: { url: 'https://dog-api.kinduff.com/api/facts', key: 'facts', isArray: true, title: '🐶 Dog Fact' },
-    worldfact: { url: 'https://uselessfacts.jsph.pl/random.json?language=en', key: 'text', title: '🌍 World Fact' }
+    worldfact: { url: 'https://uselessfacts.jsph.pl/random.json?language=en', key: 'text', title: '🌍 World Fact' },
+    randomfact: { url: 'https://www.boredapi.com/api/activity', key: 'activity', title: '🤔 Random Fact/Activity' }
 };
 
 async function getFilteredFact(factType) {
     const api = factAPIs[factType];
-    if (!api) return null;
+    if (!api) return { fact: null, error: 'Invalid fact type.' };
 
     for (let i = 0; i < 10; i++) { // Try up to 10 times
         try {
@@ -23,13 +24,16 @@ async function getFilteredFact(factType) {
             let fact = api.isArray ? response.data[api.key][0] : response.data[api.key];
 
             if (fact && typeof fact === 'string' && !forbiddenWords.some(word => fact.toLowerCase().includes(word))) {
-                return fact;
+                return { fact, error: null };
             }
         } catch (error) {
+            if (i === 9) { // If it's the last attempt, return the error
+                return { fact: null, error: `The API for ${factType} seems to be down.` };
+            }
             // Ignore fetch error and try again
         }
     }
-    return null; // Return null if no suitable fact is found
+    return { fact: null, error: `Could not fetch a suitable fact for ${factType} after 10 attempts.` }; // Return specific error if no suitable fact is found
 }
 
 async function handleFactCommand(source, factType) {
@@ -37,12 +41,13 @@ async function handleFactCommand(source, factType) {
     const api = factAPIs[factType];
 
     try {
-        const fact = await getFilteredFact(factType);
+        const { fact, error: factError } = await getFilteredFact(factType);
 
         if (!fact) {
+            const description = factError || `${emojis.fail} Could not fetch a suitable fact at this time. Please try again later.`;
             const errorEmbed = new EmbedBuilder()
                 .setColor(embedColors.error)
-                .setDescription(`${emojis.fail} Could not fetch a suitable fact at this time. Please try again later.`);
+                .setDescription(description);
             if (source.isCommand && source.isCommand()) {
                 return source.reply({ embeds: [errorEmbed], ephemeral: true });
             } else {
@@ -81,7 +86,8 @@ module.exports = {
         .setDescription('Get random facts.')
         .addSubcommand(sub => sub.setName('catfact').setDescription('Get a random cat fact.'))
         .addSubcommand(sub => sub.setName('dogfact').setDescription('Get a random dog fact.'))
-        .addSubcommand(sub => sub.setName('worldfact').setDescription('Get a random useless fact.')),
+        .addSubcommand(sub => sub.setName('worldfact').setDescription('Get a random useless fact.'))
+        .addSubcommand(sub => sub.setName('randomfact').setDescription('Get a random fact or activity suggestion.')),
 
     async execute(interaction) {
         if (!await hasPermission(interaction, 'fun')) {

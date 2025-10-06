@@ -30,7 +30,7 @@ const helpEmbeds = {
   fun: new EmbedBuilder()
     .setColor(embedColors.info)
     .setTitle('Fun Commands')
-    .setDescription('`/fun catfact`, `/fun dogfact`, `/fun worldfact`, `/dadjoke`, `/coinflip`')
+    .setDescription('`/fun catfact`, `/fun dogfact`, `/fun worldfact`, `/fun randomfact`, `/dadjoke`, `/coinflip`')
 };
 
 module.exports = {
