@@ -5,15 +5,15 @@ const embedColors = require('../../embedColors');
 const emojis = require('../../emojis');
 
 const images = {
-    flipping: 'https://i.e-z.host/ab55yhm8.gif',
-    heads: 'https://i.e-z.host/tcx2tf8c.png',
-    tails: 'https://i.e-z.host/tzuf1b32.png'
+    flipping: 'https://i.e-z.host/34vwlhle.gif',
+    heads: 'https://i.e-z.host/e930aiss.png',
+    tails: 'https://i.e-z.host/oke43pl8.png'
 };
 
 async function handleCoinflip(source) {
     // Initial "flipping" embed
     const flippingEmbed = new EmbedBuilder()
-        .setColor(embedColors.info)
+        .setColor('#ffe102')
         .setTitle('Flipping a coin...')
         .setImage(images.flipping);
 
