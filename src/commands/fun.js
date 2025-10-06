@@ -5,11 +5,11 @@ const GuildConfig = require('../schemas/GuildConfig');
 const embedColors = require('../../embedColors');
 const emojis = require('../../emojis');
 
-const forbiddenWords = ['penis', 'eat', 'whale', 'sex', 'sexual'];
+const forbiddenWords = ['penis', 'sex', 'sexual'];
 
 const factAPIs = {
     catfact: { url: 'https://catfact.ninja/fact', key: 'fact', title: '🐱 Cat Fact' },
-    dogfact: { url: 'https://dog-api.kinduff.com/api/facts', key: 'facts', isArray: true, title: '🐶 Dog Fact' },
+    dogfact: { url: 'https://some-random-api.com/facts/dog', key: 'fact', title: '🐶 Dog Fact' },
     worldfact: { url: 'https://uselessfacts.jsph.pl/random.json?language=en', key: 'text', title: '🌍 World Fact' },
     randomfact: { url: 'https://www.boredapi.com/api/activity', key: 'activity', title: '🤔 Random Fact/Activity' }
 };
