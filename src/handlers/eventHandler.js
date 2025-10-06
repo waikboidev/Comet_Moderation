@@ -40,6 +40,7 @@ async function eventHandler(client) {
     const fun = require('../commands/fun');
     const dadjoke = require('../commands/dadjoke');
     const coinflip = require('../commands/coinflip');
+    const eightball = require('../commands/8ball');
     client.on('messageCreate', async (message) => {
       await ping.prefixHandler?.(message);
       await serverInfo.prefixHandler?.(message);
@@ -55,6 +56,7 @@ async function eventHandler(client) {
       await fun.prefixHandler?.(message);
       await dadjoke.prefixHandler?.(message);
       await coinflip.prefixHandler?.(message);
+      await eightball.prefixHandler?.(message);
       // Add more prefixHandler calls for other commands as needed
     });
     client._prefixHandlerRegistered = true;
