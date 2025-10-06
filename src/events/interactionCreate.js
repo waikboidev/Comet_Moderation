@@ -15,6 +15,11 @@ module.exports = {
       return;
     }
 
+    if (interaction.isButton()) {
+        // Button logic can be added here for other commands in the future
+        return;
+    }
+
     if (!interaction.isCommand()) return;
 
     const command = interaction.client.commands.get(interaction.commandName);
@@ -27,6 +32,15 @@ module.exports = {
     try {
       await command.execute(interaction);
     } catch (error) {
+      console.error(error);
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({ content: '<:fail:1420911452050686034> There was an error while executing this command!', ephemeral: true });
+      } else {
+        await interaction.reply({ content: '<:fail:1420911452050686034> There was an error while executing this command!', ephemeral: true });
+      }
+    }
+  },
+};
       console.error(error);
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp({ content: '<:fail:1420911452050686034> There was an error while executing this command!', ephemeral: true });
