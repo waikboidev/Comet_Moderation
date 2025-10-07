@@ -5,7 +5,17 @@ const GuildConfig = require('../schemas/GuildConfig');
 const embedColors = require('../../embedColors');
 const emojis = require('../../emojis');
 const { hasPermission } = require('../utils/permissions');
-const timezones = require('../../timezones.json');
+
+let timezones = {};
+try {
+  timezones = require('../../timezones.json');
+} catch (error) {
+  if (error.code === 'MODULE_NOT_FOUND') {
+    console.warn('[WARN] timezones.json not found. Custom timezone aliases will not be available.');
+  } else {
+    throw error;
+  }
+}
 
 // --- Database Helpers ---
 async function getUserSettings(userId) {
