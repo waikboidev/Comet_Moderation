@@ -8,12 +8,12 @@ const helpEmbeds = {
   main: new EmbedBuilder()
     .setColor(embedColors.info)
     .setTitle('Help')
-    .setDescription('Use `/help <category>` or `{prefix}help <category>` for more info.')
     .addFields(
-      { name: 'Moderation', value: 'Commands for server moderation.', inline: true },
-      { name: 'Utility', value: 'Useful utility commands.', inline: true },
-      { name: 'Information', value: 'Commands to get information.', inline: true },
-      { name: 'Fun', value: 'Commands for fun and entertainment.', inline: true }
+      { name: 'Comet Support', value: 'Looking for help or guidance? We are always ready to assist you. Join our [support server here.](https://discord.gg/comet).', inline: false },
+      { name: 'Moderation', value: 'c-help moderation', inline: false },
+      { name: 'Utility', value: 'c-help utility', inline: false },
+      { name: 'Information', value: 'c-help information', inline: false },
+      { name: 'Fun', value: 'c-help fun', inline: false }
     ),
   moderation: new EmbedBuilder()
     .setColor(embedColors.info)

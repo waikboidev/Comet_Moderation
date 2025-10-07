@@ -3,6 +3,7 @@ const { createCanvas, loadImage } = require('canvas');
 const path = require('path');
 const UserXP = require('../schemas/UserXP');
 const UserXPConfig = require('../schemas/UserXPConfig');
+const GuildXPConfig = require('../schemas/GuildXPConfig'); // Import GuildXPConfig
 const embedColors = require('../../embedColors');
 const emojis = require('../../emojis');
 
@@ -53,6 +54,7 @@ function roundRect(ctx, x, y, width, height, radius) {
 // --- Image Generation ---
 async function createRankCard(user, guild, userXP) {
     const userConfig = await UserXPConfig.findOne({ userId: user.id }) || {};
+    const guildXPConfig = await GuildXPConfig.findOne({ guildId: guild.id }) || {}; // Fetch guild XP config
     const level = calculateLevel(userXP.xp);
     const currentLevelXP = calculateXPForLevel(level);
     const nextLevelXP = calculateXPForLevel(level + 1);
@@ -103,19 +105,36 @@ async function createRankCard(user, guild, userXP) {
     ctx.font = `bold 40px ${modernFont}`;
     ctx.fillText(user.username, 240, 100);
 
-    // Stats Labels
-    ctx.fillStyle = secondaryColor;
-    ctx.font = `20px ${modernFont}`;
-    ctx.fillText('SERVER RANK', 240, 150);
-    ctx.fillText('WEEKLY RANK', 380, 150);
-    ctx.fillText('WEEKLY EXP', 510, 150);
+    // --- Stats Section (Conditional) ---
+    const weeklyEnabled = guildXPConfig.weeklyLeaderboardEnabled;
 
-    // Stats Values
-    ctx.fillStyle = textColor;
-    ctx.font = `bold 30px ${modernFont}`;
-    ctx.fillText(`#${rank || 'N/A'}`, 240, 185);
-    ctx.fillText('Off', 380, 185); // Placeholder for Weekly Rank
-    ctx.fillText('Off', 510, 185); // Placeholder for Weekly EXP
+    if (weeklyEnabled) {
+        // Stats Labels (3 columns)
+        ctx.fillStyle = secondaryColor;
+        ctx.font = `18px ${modernFont}`;
+        ctx.fillText('SERVER RANK', 240, 150);
+        ctx.fillText('WEEKLY RANK', 380, 150);
+        ctx.fillText('WEEKLY EXP', 500, 150);
+
+        // Stats Values (3 columns)
+        ctx.fillStyle = textColor;
+        ctx.font = `bold 28px ${modernFont}`;
+        ctx.fillText(`#${rank || 'N/A'}`, 240, 185);
+        ctx.fillText('N/A', 380, 185); // Placeholder for Weekly Rank
+        ctx.fillText('N/A', 500, 185); // Placeholder for Weekly EXP
+    } else {
+        // Only show Server Rank (centered)
+        ctx.textAlign = 'center';
+        ctx.fillStyle = secondaryColor;
+        ctx.font = `20px ${modernFont}`;
+        ctx.fillText('SERVER RANK', 395, 150); // Centered in the available space
+
+        ctx.fillStyle = textColor;
+        ctx.font = `bold 30px ${modernFont}`;
+        ctx.fillText(`#${rank || 'N/A'}`, 395, 185);
+        ctx.textAlign = 'left'; // Reset alignment
+    }
+
 
     // Level
     ctx.textAlign = 'center';
