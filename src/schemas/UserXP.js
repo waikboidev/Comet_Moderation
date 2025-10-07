@@ -5,6 +5,7 @@ const userXPSchema = new Schema({
   userId: { type: String, required: true },
   xp: { type: Number, default: 0 },
   level: { type: Number, default: 0 },
+  weeklyXp: { type: Number, default: 0 },
 });
 
 // Create a compound index to ensure a user only has one XP document per guild
