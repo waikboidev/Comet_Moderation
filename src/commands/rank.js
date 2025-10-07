@@ -1,10 +1,19 @@
 const { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const { createCanvas, loadImage } = require('canvas');
 const path = require('path');
-const rgba = require('hex-to-rgba');
 const UserXP = require('../schemas/UserXP');
+const UserXPConfig = require('../schemas/UserXPConfig');
 const embedColors = require('../../embedColors');
 const emojis = require('../../emojis');
+
+// Replaced `require('hex-to-rgba')` with this helper function to fix the error.
+const rgba = (hex, opacity) => {
+    const hexValue = hex.startsWith('#') ? hex.slice(1) : hex;
+    const r = parseInt(hexValue.substring(0, 2), 16);
+    const g = parseInt(hexValue.substring(2, 4), 16);
+    const b = parseInt(hexValue.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
 
 // --- XP & Level Helpers ---
 const calculateLevel = (xp) => Math.floor(0.1 * Math.sqrt(xp));
@@ -29,6 +38,7 @@ async function getLeaderboardRank(guildId, userId) {
 
 // --- Image Generation ---
 async function createRankCard(user, guild, userXP) {
+    const userConfig = await UserXPConfig.findOne({ userId: user.id }) || {};
     const level = calculateLevel(userXP.xp);
     const currentLevelXP = calculateXPForLevel(level);
     const nextLevelXP = calculateXPForLevel(level + 1);
@@ -53,9 +63,26 @@ async function createRankCard(user, guild, userXP) {
     }
 
     // --- Draw Background ---
-    const backgroundUrl = userConfig.rankCardBackground || 'default_background_url';
-    ctx.fillStyle = '#23272A';
+    const backgroundUrl = userConfig.rankCardBackground;
+    try {
+        if (backgroundUrl) {
+            const background = await loadImage(backgroundUrl);
+            ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+        } else {
+            ctx.fillStyle = '#23272A';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+    } catch (e) {
+        console.warn('Failed to load background image, using default color.', e);
+        ctx.fillStyle = '#23272A';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // --- Draw Overlay ---
+    const overlayOpacity = (userConfig.rankCardOpacity ?? 50) / 100;
+    ctx.fillStyle = rgba('#000000', overlayOpacity);
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
 
     // User Info
     ctx.font = 'bold 36px sans-serif';
@@ -88,7 +115,7 @@ async function createRankCard(user, guild, userXP) {
     ctx.fillRect(270, 180, 600, 40);
     
     const progressWidth = (xpProgress / xpNeeded) * 600;
-    ctx.fillStyle = embedColors.info; // Use a color from your theme
+    ctx.fillStyle = userConfig.rankCardColor || embedColors.info; // Use a color from your theme
     ctx.fillRect(270, 180, progressWidth, 40);
 
     // XP Text
