@@ -22,7 +22,7 @@ const helpEmbeds = {
   utility: new EmbedBuilder()
     .setColor(embedColors.info)
     .setTitle('Utility Commands')
-    .setDescription('`/say`, `/remindme`, `/quote`, `/enlarge`'),
+    .setDescription('`/say`, `/remindme set`, `/remindme list`, `/remindme edit`, `/remindme delete`, `/quote`, `/enlarge`'),
   information: new EmbedBuilder()
     .setColor(embedColors.info)
     .setTitle('Information Commands')

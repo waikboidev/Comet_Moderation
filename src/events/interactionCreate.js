@@ -1,4 +1,8 @@
-const { Events } = require('discord.js');
+const { Events, EmbedBuilder } = require('discord.js');
+const Reminder = require('../schemas/Reminder');
+const embedColors = require('../../embedColors');
+const emojis = require('../../emojis');
+const ms = require('ms');
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -13,6 +17,34 @@ module.exports = {
         }
       }
       return;
+    }
+
+    if (interaction.isModalSubmit()) {
+        if (interaction.customId.startsWith('remindme_edit_')) {
+            const shortId = interaction.customId.split('_')[2];
+            const reminder = await Reminder.findOne({ userId: interaction.user.id, shortId: shortId });
+            if (!reminder) {
+                return interaction.reply({ content: 'This reminder no longer exists.', ephemeral: true });
+            }
+
+            const newTime = interaction.fields.getTextInputValue('time');
+            const newMessage = interaction.fields.getTextInputValue('message');
+            const duration = ms(newTime);
+
+            if (!duration || duration < 60000) {
+                return interaction.reply({ content: 'Invalid time format. Please use something like "10m", "2h", or "1d". Minimum is 1 minute.', ephemeral: true });
+            }
+
+            reminder.time = new Date(Date.now() + duration);
+            reminder.message = newMessage;
+            await reminder.save();
+
+            const embed = new EmbedBuilder()
+                .setColor(embedColors.success)
+                .setDescription(`${emojis.success} Reminder \`${shortId}\` has been updated. It will now go off <t:${Math.floor(reminder.time.getTime() / 1000)}:R>.`);
+            return interaction.reply({ embeds: [embed], ephemeral: true });
+        }
+        return;
     }
 
     if (interaction.isButton()) {

@@ -29,8 +29,8 @@ async function sendPaginatedLeaderboard(interaction, members, user) {
     };
 
     const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('prev_page').setLabel('◀').setStyle(ButtonStyle.Secondary).setDisabled(true),
-        new ButtonBuilder().setCustomId('next_page').setLabel('▶').setStyle(ButtonStyle.Secondary).setDisabled(totalPages <= 1)
+        new ButtonBuilder().setCustomId('prev_page').setLabel('<:left:1424293584366080115>').setStyle(ButtonStyle.Secondary).setDisabled(true),
+        new ButtonBuilder().setCustomId('next_page').setLabel('<:right:1424293602120433764>').setStyle(ButtonStyle.Secondary).setDisabled(totalPages <= 1)
     );
 
     const replyOptions = { embeds: [generateEmbed(currentPage)], components: totalPages > 1 ? [row] : [], fetchReply: true };

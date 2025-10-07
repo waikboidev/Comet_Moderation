@@ -42,6 +42,7 @@ async function eventHandler(client) {
     const coinflip = require('../commands/coinflip');
     const eightball = require('../commands/8ball');
     const weekly = require('../commands/weekly'); // Add this
+    const remindme = require('../commands/remindme');
     client.on('messageCreate', async (message) => {
       await ping.prefixHandler?.(message);
       await serverInfo.prefixHandler?.(message);
@@ -59,6 +60,7 @@ async function eventHandler(client) {
       await coinflip.prefixHandler?.(message);
       await eightball.prefixHandler?.(message);
       await weekly.prefixHandler?.(message); // Add this
+      await remindme.prefixHandler?.(message);
       // Add more prefixHandler calls for other commands as needed
     });
     client._prefixHandlerRegistered = true;
