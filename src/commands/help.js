@@ -9,7 +9,7 @@ const helpEmbeds = {
     .setColor(embedColors.info)
     .setTitle('Help')
     .addFields(
-      { name: 'Comet Support', value: 'Looking for help or guidance? We are always ready to assist you. [Join our support server here.](https://discord.gg/comet)', inline: false },
+      { name: 'Comet Support', value: 'Looking for help or guidance? We are always ready to assist you. [Join our support server here.](https://cometbot.xyz/support)', inline: false },
       { name: 'Moderation', value: '`c-help moderation`', inline: true },
       { name: 'Utility', value: '`c-help utility`', inline: true },
       { name: 'Information', value: '`c-help information`', inline: true },
