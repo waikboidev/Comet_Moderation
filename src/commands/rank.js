@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const { createCanvas, loadImage } = require('canvas');
 const path = require('path');
+const rgba = require('hex-to-rgba');
 const UserXP = require('../schemas/UserXP');
 const embedColors = require('../../embedColors');
 const emojis = require('../../emojis');
@@ -39,12 +40,20 @@ async function createRankCard(user, guild, userXP) {
     const ctx = canvas.getContext('2d');
 
     // --- Load Assets ---
-    // Note: You need to create these icon files in an 'assets' directory.
-    // For example: 'c:\Users\riley\Downloads\Comet_Moderation\assets\rank.png'
-    const rankIcon = await loadImage(path.join(__dirname, '../../assets/rank.png'));
-    const levelIcon = await loadImage(path.join(__dirname, '../../assets/level.png'));
+    let rankIcon, levelIcon;
+    try {
+        rankIcon = await loadImage(path.join(__dirname, '../../assets/rank.png'));
+    } catch (e) {
+        console.warn('Could not load rank.png, skipping icon.');
+    }
+    try {
+        levelIcon = await loadImage(path.join(__dirname, '../../assets/level.png'));
+    } catch (e) {
+        console.warn('Could not load level.png, skipping icon.');
+    }
 
-    // Background
+    // --- Draw Background ---
+    const backgroundUrl = userConfig.rankCardBackground || 'default_background_url';
     ctx.fillStyle = '#23272A';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -62,13 +71,17 @@ async function createRankCard(user, guild, userXP) {
     const rankText = `Rank #${rank}`;
     const rankTextWidth = ctx.measureText(rankText).width;
     ctx.fillText(rankText, 870, 80);
-    ctx.drawImage(rankIcon, 870 - rankTextWidth - 40, 55, 30, 30);
+    if (rankIcon) {
+        ctx.drawImage(rankIcon, 870 - rankTextWidth - 40, 55, 30, 30);
+    }
 
     // Draw Level with Icon
     const levelText = `Level ${level}`;
     const levelTextWidth = ctx.measureText(levelText).width;
     ctx.fillText(levelText, 870, 120);
-    ctx.drawImage(levelIcon, 870 - levelTextWidth - 40, 95, 30, 30);
+    if (levelIcon) {
+        ctx.drawImage(levelIcon, 870 - levelTextWidth - 40, 95, 30, 30);
+    }
 
     // Progress Bar
     ctx.fillStyle = '#484b4e';
