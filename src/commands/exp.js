@@ -182,10 +182,128 @@ module.exports = {
             }
         }
 
-        // Placeholder for other admin commands
+        if (group === 'settings') {
+            if (subCommand === 'modify-xp') {
+                const user = interaction.options.getUser('user');
+                const action = interaction.options.getString('action');
+                const amount = interaction.options.getInteger('amount');
+
+                const userXP = await UserXP.findOneAndUpdate(
+                    { guildId: interaction.guild.id, userId: user.id },
+                    {},
+                    { upsert: true, new: true }
+                );
+
+                if (action === 'add') {
+                    userXP.xp += amount;
+                } else { // remove
+                    userXP.xp = Math.max(0, userXP.xp - amount);
+                }
+                await userXP.save();
+
+                const embed = new EmbedBuilder()
+                    .setColor(embedColors.success)
+                    .setDescription(`${emojis.success} Successfully ${action === 'add' ? 'added' : 'removed'} ${amount} XP ${action === 'add' ? 'to' : 'from'} ${user}.`);
+                return interaction.reply({ embeds: [embed], ephemeral: true });
+            }
+
+            if (subCommand === 'clear-on-leave') {
+                const enabled = interaction.options.getBoolean('enabled');
+                config.clearXPOnLeave = enabled;
+                await config.save();
+
+                const embed = new EmbedBuilder()
+                    .setColor(embedColors.success)
+                    .setDescription(`${emojis.success} Clear XP on leave has been ${enabled ? 'enabled' : 'disabled'}.`);
+                return interaction.reply({ embeds: [embed], ephemeral: true });
+            }
+        }
+
+        if (group === 'roles') {
+            if (subCommand === 'level-reward') {
+                const action = interaction.options.getString('action');
+                const level = interaction.options.getInteger('level');
+                const role = interaction.options.getRole('role');
+
+                if (action === 'add') {
+                    if (!role) {
+                        return interaction.reply({ content: 'You must provide a role to add.', ephemeral: true });
+                    }
+                    const existingReward = config.levelRewards.find(r => r.level === level);
+                    if (existingReward) {
+                        existingReward.roleId = role.id;
+                    } else {
+                        config.levelRewards.push({ level, roleId: role.id });
+                    }
+                    await config.save();
+                    const embed = new EmbedBuilder().setColor(embedColors.success).setDescription(`${emojis.success} Role ${role} will be awarded at level ${level}.`);
+                    return interaction.reply({ embeds: [embed], ephemeral: true });
+                } else { // remove
+                    const initialLength = config.levelRewards.length;
+                    config.levelRewards = config.levelRewards.filter(r => r.level !== level);
+                    if (config.levelRewards.length === initialLength) {
+                        const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.fail} No role reward found for level ${level}.`);
+                        return interaction.reply({ embeds: [embed], ephemeral: true });
+                    }
+                    await config.save();
+                    const embed = new EmbedBuilder().setColor(embedColors.success).setDescription(`${emojis.success} Removed role reward for level ${level}.`);
+                    return interaction.reply({ embeds: [embed], ephemeral: true });
+                }
+            }
+
+            if (subCommand === 'join-role') {
+                const role = interaction.options.getRole('role');
+                config.joinRole = role ? role.id : null;
+                await config.save();
+
+                const embed = new EmbedBuilder().setColor(embedColors.success);
+                if (role) {
+                    embed.setDescription(`${emojis.success} Join role set to ${role}.`);
+                } else {
+                    embed.setDescription(`${emojis.success} Join role has been cleared.`);
+                }
+                return interaction.reply({ embeds: [embed], ephemeral: true });
+            }
+        }
+
+        if (group === 'blacklist') {
+            const channel = interaction.options.getChannel('channel');
+            const role = interaction.options.getRole('role');
+            const targetId = channel ? channel.id : (role ? role.id : null);
+            const targetType = channel ? 'channel' : (role ? 'role' : null);
+            const targetMention = channel || role;
+
+            if (!targetId) {
+                return interaction.reply({ content: 'You must provide a channel or a role.', ephemeral: true });
+            }
+
+            if (subCommand === 'add') {
+                if (config.blacklisted.includes(targetId)) {
+                    const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.fail} This ${targetType} is already blacklisted.`);
+                    return interaction.reply({ embeds: [embed], ephemeral: true });
+                }
+                config.blacklisted.push(targetId);
+                await config.save();
+                const embed = new EmbedBuilder().setColor(embedColors.success).setDescription(`${emojis.success} ${targetMention} has been added to the XP blacklist.`);
+                return interaction.reply({ embeds: [embed], ephemeral: true });
+            }
+
+            if (subCommand === 'remove') {
+                if (!config.blacklisted.includes(targetId)) {
+                    const embed = new EmbedBuilder().setColor(embedColors.error).setDescription(`${emojis.fail} This ${targetType} is not on the blacklist.`);
+                    return interaction.reply({ embeds: [embed], ephemeral: true });
+                }
+                config.blacklisted = config.blacklisted.filter(id => id !== targetId);
+                await config.save();
+                const embed = new EmbedBuilder().setColor(embedColors.success).setDescription(`${emojis.success} ${targetMention} has been removed from the XP blacklist.`);
+                return interaction.reply({ embeds: [embed], ephemeral: true });
+            }
+        }
+
+        // Fallback for any unimplemented commands
         const embed = new EmbedBuilder()
-            .setColor(embedColors.success)
-            .setDescription(`${emojis.success} Configuration command received. Full implementation pending.`);
+            .setColor(embedColors.error)
+            .setDescription(`${emojis.fail} This command functionality is not yet implemented.`);
         await interaction.reply({ embeds: [embed], ephemeral: true });
     },
 };
