@@ -5,6 +5,19 @@ const UserXPConfig = require('../schemas/UserXPConfig');
 const embedColors = require('../../embedColors');
 const emojis = require('../../emojis');
 
+// To fix the error in rank.js, copy this function into rank.js
+// and replace `require('hex-to-rgba')` with it.
+// For example: `const hexToRgba = require('hex-to-rgba');` becomes:
+/*
+const hexToRgba = (hex, opacity) => {
+    const hexValue = hex.startsWith('#') ? hex.slice(1) : hex;
+    const r = parseInt(hexValue.substring(0, 2), 16);
+    const g = parseInt(hexValue.substring(2, 4), 16);
+    const b = parseInt(hexValue.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
+*/
+
 // Helper to get or create guild config
 async function getGuildConfig(guildId) {
     return await GuildXPConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true });
