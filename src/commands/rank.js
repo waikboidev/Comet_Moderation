@@ -123,30 +123,18 @@ async function createRankCard(user, guild, userXP) {
         ctx.fillText('N/A', 380, 185); // Placeholder for Weekly Rank
         ctx.fillText('N/A', 500, 185); // Placeholder for Weekly EXP
     } else {
-        // Only show Server Rank (left-aligned but centered as a block)
-        const rankLabel = 'SERVER RANK';
-        const rankValue = `#${rank || 'N/A'}`;
-
-        // Measure text widths to find the widest line
-        ctx.font = `20px ${modernFont}`;
-        const labelWidth = ctx.measureText(rankLabel).width;
-        ctx.font = `bold 30px ${modernFont}`;
-        const valueWidth = ctx.measureText(rankValue).width;
-        const maxWidth = Math.max(labelWidth, valueWidth);
-
-        // Calculate the starting X position to center the block
+        // Only show Server Rank (centered)
         const blockCenterX = 240 + (540 - 240) / 2; // Center of the stats area
-        const startX = blockCenterX - (maxWidth / 2);
 
-        // Draw the text, left-aligned at the calculated start position
-        ctx.textAlign = 'left';
+        ctx.textAlign = 'center';
         ctx.fillStyle = secondaryColor;
         ctx.font = `20px ${modernFont}`;
-        ctx.fillText(rankLabel, startX, 150);
+        ctx.fillText('SERVER RANK', blockCenterX, 150);
 
         ctx.fillStyle = textColor;
         ctx.font = `bold 30px ${modernFont}`;
-        ctx.fillText(rankValue, startX, 185);
+        ctx.fillText(`#${rank || 'N/A'}`, blockCenterX, 185);
+        ctx.textAlign = 'left'; // Reset alignment for subsequent drawing
     }
 
 
