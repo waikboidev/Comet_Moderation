@@ -59,7 +59,7 @@ module.exports = {
             .addSubcommand(sub => sub
                 .setName('remove')
                 .setDescription('Remove a role or channel from the XP blacklist.')
-                .addChannelOption(opt => optsetName('channel').setDescription('The channel to remove from the blacklist.'))
+                .addChannelOption(opt => opt.setName('channel').setDescription('The channel to remove from the blacklist.'))
                 .addRoleOption(opt => opt.setName('role').setDescription('The role to remove from the blacklist.'))
             )
         )
