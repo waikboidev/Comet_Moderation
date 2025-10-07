@@ -62,22 +62,19 @@ async function createRankCard(user, guild, userXP) {
 
     const canvas = createCanvas(800, 250);
     const ctx = canvas.getContext('2d');
+    const modernFont = "'Verdana', 'Geneva', 'sans-serif'";
 
     // --- Draw Background ---
     const backgroundUrl = userConfig.rankCardBackground;
-    try {
-        if (backgroundUrl) {
+    if (backgroundUrl) {
+        try {
             const background = await loadImage(backgroundUrl);
             ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-        } else {
-            ctx.fillStyle = '#23272A'; // Default dark background
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        } catch (e) {
+            console.warn('Failed to load background image.', e);
         }
-    } catch (e) {
-        console.warn('Failed to load background image, using default color.', e);
-        ctx.fillStyle = '#23272A';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
+    // No default background fill for a transparent canvas
 
     // --- Draw Panels ---
     const overlayOpacity = (userConfig.rankCardOpacity ?? 70) / 100;
@@ -103,29 +100,35 @@ async function createRankCard(user, guild, userXP) {
 
     // Username
     ctx.fillStyle = primaryColor;
-    ctx.font = 'bold 40px sans-serif';
+    ctx.font = `bold 40px ${modernFont}`;
     ctx.fillText(user.username, 240, 100);
 
-    // Server Rank
+    // Stats Labels
     ctx.fillStyle = secondaryColor;
-    ctx.font = '20px sans-serif';
+    ctx.font = `20px ${modernFont}`;
     ctx.fillText('SERVER RANK', 240, 150);
+    ctx.fillText('WEEKLY RANK', 380, 150);
+    ctx.fillText('WEEKLY EXP', 510, 150);
+
+    // Stats Values
     ctx.fillStyle = textColor;
-    ctx.font = 'bold 30px sans-serif';
+    ctx.font = `bold 30px ${modernFont}`;
     ctx.fillText(`#${rank || 'N/A'}`, 240, 185);
+    ctx.fillText('Off', 380, 185); // Placeholder for Weekly Rank
+    ctx.fillText('Off', 510, 185); // Placeholder for Weekly EXP
 
     // Level
     ctx.textAlign = 'center';
     ctx.fillStyle = secondaryColor;
-    ctx.font = '20px sans-serif';
+    ctx.font = `20px ${modernFont}`;
     ctx.fillText('LEVEL', 680, 60);
     ctx.fillStyle = primaryColor;
-    ctx.font = 'bold 35px sans-serif';
+    ctx.font = `bold 35px ${modernFont}`;
     ctx.fillText(level, 680, 100);
 
     // EXP Label
     ctx.fillStyle = secondaryColor;
-    ctx.font = '20px sans-serif';
+    ctx.font = `20px ${modernFont}`;
     ctx.fillText('EXP', 680, 170);
 
     // --- Progress Bar ---
@@ -137,14 +140,14 @@ async function createRankCard(user, guild, userXP) {
     roundRect(ctx, progressBarX, progressBarY, progressBarWidth, progressBarHeight, 12).fill();
 
     if (xpProgress > 0) {
-        const progressWidth = (xpProgress / xpNeeded) * progressBarWidth;
+        const progressWidth = Math.max(progressBarHeight, (xpProgress / xpNeeded) * progressBarWidth); // Ensure progress is visible
         ctx.fillStyle = primaryColor;
         roundRect(ctx, progressBarX, progressBarY, progressWidth, progressBarHeight, 12).fill();
     }
 
     // XP Text
     ctx.fillStyle = textColor;
-    ctx.font = '16px sans-serif';
+    ctx.font = `16px ${modernFont}`;
     ctx.fillText(`${xpProgress.toFixed(0)} / ${xpNeeded.toFixed(0)}`, 680, 205);
 
 
