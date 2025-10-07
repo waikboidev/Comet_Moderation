@@ -9,11 +9,11 @@ const helpEmbeds = {
     .setColor(embedColors.info)
     .setTitle('Help')
     .addFields(
-      { name: 'Comet Support', value: 'Looking for help or guidance? We are always ready to assist you. Join our [support server here.](https://discord.gg/comet).', inline: false },
-      { name: 'Moderation', value: 'c-help moderation', inline: false },
-      { name: 'Utility', value: 'c-help utility', inline: false },
-      { name: 'Information', value: 'c-help information', inline: false },
-      { name: 'Fun', value: 'c-help fun', inline: false }
+      { name: 'Comet Support', value: 'Looking for help or guidance? We are always ready to assist you. [Join our support server here.](https://discord.gg/comet)', inline: false },
+      { name: 'Moderation', value: '`c-help moderation`', inline: true },
+      { name: 'Utility', value: '`c-help utility`', inline: true },
+      { name: 'Information', value: '`c-help information`', inline: true },
+      { name: 'Activities', value: '`c-help activities`', inline: true }
     ),
   moderation: new EmbedBuilder()
     .setColor(embedColors.info)
@@ -45,7 +45,7 @@ module.exports = {
           { name: 'Moderation', value: 'moderation' },
           { name: 'Utility', value: 'utility' },
           { name: 'Information', value: 'information' },
-          { name: 'Fun', value: 'fun' }
+          { name: 'Activities', value: 'activities' }
         )
     ),
   async execute(interaction) {
