@@ -5,6 +5,7 @@ const GuildConfig = require('../schemas/GuildConfig');
 const embedColors = require('../../embedColors');
 const emojis = require('../../emojis');
 const { hasPermission } = require('../utils/permissions');
+const timezones = require('../../timezones.json');
 
 // --- Database Helpers ---
 async function getUserSettings(userId) {
@@ -33,11 +34,22 @@ async function clearUserTimezone(userId) {
 // --- Timezone Logic ---
 function findTimezone(input) {
   const normalizedInput = input.trim().toLowerCase();
-  // Exact IANA match
+
+  // 1. Search in our custom timezones.json by city/abbreviation
+  if (timezones[normalizedInput]) {
+    return timezones[normalizedInput];
+  }
+
+  // 2. Exact IANA match (case-insensitive for robustness)
+  const ianaZone = moment.tz.names().find(name => name.toLowerCase() === normalizedInput);
+  if (ianaZone) return ianaZone;
+  // Also check original input for case-sensitive IANA zones like 'Etc/GMT+1'
   if (moment.tz.zone(input)) return input;
-  // Find by city/region
+
+  // 3. Find by partial city/region match in IANA database
   const found = moment.tz.names().find(z => z.toLowerCase().includes(normalizedInput));
   if (found) return found;
+
   return null;
 }
 
