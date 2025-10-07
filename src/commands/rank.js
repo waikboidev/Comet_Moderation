@@ -36,6 +36,20 @@ async function getLeaderboardRank(guildId, userId) {
     return rank === -1 ? null : rank + 1;
 }
 
+// --- Helper to draw rounded rectangles ---
+function roundRect(ctx, x, y, width, height, radius) {
+    if (width < 2 * radius) radius = width / 2;
+    if (height < 2 * radius) radius = height / 2;
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.arcTo(x + width, y, x + width, y + height, radius);
+    ctx.arcTo(x + width, y + height, x, y + height, radius);
+    ctx.arcTo(x, y + height, x, y, radius);
+    ctx.arcTo(x, y, x + width, y, radius);
+    ctx.closePath();
+    return ctx;
+}
+
 // --- Image Generation ---
 async function createRankCard(user, guild, userXP) {
     const userConfig = await UserXPConfig.findOne({ userId: user.id }) || {};
@@ -46,21 +60,8 @@ async function createRankCard(user, guild, userXP) {
     const xpProgress = userXP.xp - currentLevelXP;
     const rank = await getLeaderboardRank(guild.id, user.id);
 
-    const canvas = createCanvas(934, 282);
+    const canvas = createCanvas(800, 250);
     const ctx = canvas.getContext('2d');
-
-    // --- Load Assets ---
-    let rankIcon, levelIcon;
-    try {
-        rankIcon = await loadImage(path.join(__dirname, '../../assets/rank.png'));
-    } catch (e) {
-        console.warn('Could not load rank.png, skipping icon.');
-    }
-    try {
-        levelIcon = await loadImage(path.join(__dirname, '../../assets/level.png'));
-    } catch (e) {
-        console.warn('Could not load level.png, skipping icon.');
-    }
 
     // --- Draw Background ---
     const backgroundUrl = userConfig.rankCardBackground;
@@ -69,7 +70,7 @@ async function createRankCard(user, guild, userXP) {
             const background = await loadImage(backgroundUrl);
             ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
         } else {
-            ctx.fillStyle = '#23272A';
+            ctx.fillStyle = '#23272A'; // Default dark background
             ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
     } catch (e) {
@@ -78,60 +79,74 @@ async function createRankCard(user, guild, userXP) {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // --- Draw Overlay ---
-    const overlayOpacity = (userConfig.rankCardOpacity ?? 50) / 100;
-    ctx.fillStyle = rgba('#000000', overlayOpacity);
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // --- Draw Panels ---
+    const overlayOpacity = (userConfig.rankCardOpacity ?? 70) / 100;
+    ctx.fillStyle = rgba('#2B2D31', overlayOpacity);
+    roundRect(ctx, 20, 20, 540, 210, 20).fill(); // Main panel
+    roundRect(ctx, 580, 20, 200, 100, 20).fill(); // Level panel
+    roundRect(ctx, 580, 130, 200, 100, 20).fill(); // EXP panel
 
-
-    // User Info
-    ctx.font = 'bold 36px sans-serif';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillText(user.username, 270, 164);
-
-    // Rank & Level
-    ctx.font = '30px sans-serif';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.textAlign = 'right';
-
-    // Draw Rank with Icon
-    const rankText = `Rank #${rank}`;
-    const rankTextWidth = ctx.measureText(rankText).width;
-    ctx.fillText(rankText, 870, 80);
-    if (rankIcon) {
-        ctx.drawImage(rankIcon, 870 - rankTextWidth - 40, 55, 30, 30);
-    }
-
-    // Draw Level with Icon
-    const levelText = `Level ${level}`;
-    const levelTextWidth = ctx.measureText(levelText).width;
-    ctx.fillText(levelText, 870, 120);
-    if (levelIcon) {
-        ctx.drawImage(levelIcon, 870 - levelTextWidth - 40, 95, 30, 30);
-    }
-
-    // Progress Bar
-    ctx.fillStyle = '#484b4e';
-    ctx.fillRect(270, 180, 600, 40);
-    
-    const progressWidth = (xpProgress / xpNeeded) * 600;
-    ctx.fillStyle = userConfig.rankCardColor || embedColors.info; // Use a color from your theme
-    ctx.fillRect(270, 180, progressWidth, 40);
-
-    // XP Text
-    ctx.font = '24px sans-serif';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${xpProgress.toFixed(0)} / ${xpNeeded.toFixed(0)} XP`, 570, 210);
-
-    // Avatar
+    // --- Draw Avatar ---
+    ctx.save();
     ctx.beginPath();
-    ctx.arc(141, 141, 110, 0, Math.PI * 2, true);
+    ctx.arc(125, 125, 80, 0, Math.PI * 2, true);
     ctx.closePath();
     ctx.clip();
-
     const avatar = await loadImage(user.displayAvatarURL({ extension: 'png', size: 256 }));
-    ctx.drawImage(avatar, 31, 31, 220, 220);
+    ctx.drawImage(avatar, 45, 45, 160, 160);
+    ctx.restore();
+
+    // --- Draw Text ---
+    const primaryColor = userConfig.rankCardColor || embedColors.info;
+    const secondaryColor = '#B0B2B5';
+    const textColor = '#FFFFFF';
+
+    // Username
+    ctx.fillStyle = primaryColor;
+    ctx.font = 'bold 40px sans-serif';
+    ctx.fillText(user.username, 240, 100);
+
+    // Server Rank
+    ctx.fillStyle = secondaryColor;
+    ctx.font = '20px sans-serif';
+    ctx.fillText('SERVER RANK', 240, 150);
+    ctx.fillStyle = textColor;
+    ctx.font = 'bold 30px sans-serif';
+    ctx.fillText(`#${rank || 'N/A'}`, 240, 185);
+
+    // Level
+    ctx.textAlign = 'center';
+    ctx.fillStyle = secondaryColor;
+    ctx.font = '20px sans-serif';
+    ctx.fillText('LEVEL', 680, 60);
+    ctx.fillStyle = primaryColor;
+    ctx.font = 'bold 35px sans-serif';
+    ctx.fillText(level, 680, 100);
+
+    // EXP Label
+    ctx.fillStyle = secondaryColor;
+    ctx.font = '20px sans-serif';
+    ctx.fillText('EXP', 680, 170);
+
+    // --- Progress Bar ---
+    const progressBarX = 595;
+    const progressBarY = 185;
+    const progressBarWidth = 170;
+    const progressBarHeight = 25;
+    ctx.fillStyle = '#484b4e';
+    roundRect(ctx, progressBarX, progressBarY, progressBarWidth, progressBarHeight, 12).fill();
+
+    if (xpProgress > 0) {
+        const progressWidth = (xpProgress / xpNeeded) * progressBarWidth;
+        ctx.fillStyle = primaryColor;
+        roundRect(ctx, progressBarX, progressBarY, progressWidth, progressBarHeight, 12).fill();
+    }
+
+    // XP Text
+    ctx.fillStyle = textColor;
+    ctx.font = '16px sans-serif';
+    ctx.fillText(`${xpProgress.toFixed(0)} / ${xpNeeded.toFixed(0)}`, 680, 205);
+
 
     return new AttachmentBuilder(canvas.toBuffer(), { name: 'rank-card.png' });
 }
